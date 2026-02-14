@@ -28,11 +28,20 @@ yarn-error.log*
 
 # Local env files
 .env
-.env.local
+.env*.local
 .env.development.local
 .env.test.local
 .env.production.local
 .env.test
+
+# All JSON files except templates (to prevent credential leaks)
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!jest.config.json
+!**/config/*.json.template
+!**/*.json.template
 
 # Vercel
 .vercel
@@ -44,8 +53,7 @@ next-env.d.ts
 # Node Configuration (contains credentials)
 config/nodes.json
 config/nodes-export.json
-config/*.json
-!config/*.json.template
 
-# Google Cloud Service Account Credentials
-*.json
+# Backup files (may contain sensitive data)
+backup/*.json
+!backup/*.json.template
