@@ -1,0 +1,50 @@
+[
+    {
+        "name": "Example Protected Site",
+        "url": "https://example.com/dashboard",
+        "group": "website",
+        "authConfig": {
+            "requiresAuth": true,
+            "loginUrl": "https://example.com/login",
+            "loginType": "page",
+            "username": "YOUR_USERNAME_HERE",
+            "password": "YOUR_PASSWORD_HERE",
+            "usernameSelector": "",
+            "passwordSelector": "",
+            "submitSelector": ""
+        }
+    },
+    {
+        "name": "Another Protected Site",
+        "url": "https://another-example.com/admin",
+        "group": "backend",
+        "authConfig": {
+            "requiresAuth": true,
+            "loginUrl": "https://another-example.com/login",
+            "loginType": "page",
+            "username": "YOUR_USERNAME_HERE",
+            "password": "YOUR_PASSWORD_HERE"
+        }
+    },
+    {
+        "name": "Modal Login Example",
+        "url": "https://example.com/app",
+        "group": "website",
+        "authConfig": {
+            "requiresAuth": true,
+            "loginUrl": "https://example.com",
+            "loginType": "modal",
+            "username": "YOUR_USERNAME_HERE",
+            "password": "YOUR_PASSWORD_HERE",
+            "modalTrigger": "button.login-btn"
+        }
+    },
+    {
+        "name": "Public Site (No Auth)",
+        "url": "https://public-example.com",
+        "group": "website",
+        "authConfig": {
+            "requiresAuth": false
+        }
+    }
+]

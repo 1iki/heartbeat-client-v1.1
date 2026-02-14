@@ -1,0 +1,3015 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Monitoring Real-Time</title>
+  <style>
+    :root {
+      /* Dark Theme - Enhanced */
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --bg-hover: #475569;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --shadow: rgba(0, 0, 0, 0.5);
+      --accent-primary: #3b82f6;
+      --accent-success: #10b981;
+      --accent-danger: #ef4444;
+      --accent-warning: #f59e0b;
+      --accent-info: #8b5cf6;
+      --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      --gradient-success: linear-gradient(135deg, #10b981, #059669);
+      --gradient-danger: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    [data-theme="light"] {
+      /* Light Theme - Enhanced */
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f1f5f9;
+      --bg-hover: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --shadow: rgba(0, 0, 0, 0.08);
+      --accent-primary: #2563eb;
+      --accent-success: #059669;
+      --accent-danger: #dc2626;
+      --accent-warning: #d97706;
+      --accent-info: #7c3aed;
+      --gradient-primary: linear-gradient(135deg, #2563eb, #7c3aed);
+      --gradient-success: linear-gradient(135deg, #059669, #047857);
+      --gradient-danger: linear-gradient(135deg, #dc2626, #b91c1c);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      padding: 24px;
+      line-height: 1.6;
+      transition: background 0.3s ease, color 0.3s ease;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Header - Modern & Clean */
+    header {
+      background: var(--bg-secondary);
+      padding: 28px 36px;
+      border-radius: 20px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 6px -1px var(--shadow), 0 2px 4px -1px var(--shadow);
+      border: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-primary);
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-icon {
+      width: 56px;
+      height: 56px;
+      background: var(--gradient-primary);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .header-content h1 {
+      font-size: 1.875rem;
+      margin-bottom: 4px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    /* Theme Toggle - Enhanced */
+    .theme-toggle {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+      font-weight: 600;
+      box-shadow: 0 2px 4px var(--shadow);
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow);
+    }
+
+    .theme-toggle:active {
+      transform: translateY(0);
+    }
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2.5;
+    }
+
+    .icon-sm { width: 16px; height: 16px; }
+    .icon-lg { width: 24px; height: 24px; }
+    .icon-xl { width: 48px; height: 48px; }
+
+    /* Stats Cards - Modern Grid */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 4px var(--shadow);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent-primary);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px var(--shadow);
+      border-color: var(--accent-primary);
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.813rem;
+      margin-bottom: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-value {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    /* Controls - Enhanced Layout */
+    .controls {
+      background: var(--bg-secondary);
+      padding: 24px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 4px var(--shadow);
+    }
+
+    .btn {
+      padding: 11px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 4px var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var (--shadow);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: white;
+    }
+
+    .btn-success {
+      background: var(--gradient-success);
+      color: white;
+    }
+
+    .btn-danger {
+      background: var(--gradient-danger);
+      color: white;
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+    }
+
+    .btn-info {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+    }
+
+    .btn-sm {
+      padding: 8px 14px;
+      font-size: 0.813rem;
+    }
+
+    .interval-selector {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: var(--bg-tertiary);
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    .interval-selector select {
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .interval-selector select:hover {
+      border-color: var(--accent-primary);
+    }
+
+    .interval-selector select:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .interval-selector label {
+      color: var(--text-secondary);
+      font-size: 0.813rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .monitor-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      font-size: 0.813rem;
+      border: 1px solid var(--border-color);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .monitor-status.active {
+      border-color: var(--accent-success);
+      background: color-mix(in srgb, var(--accent-success) 10%, transparent);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .monitor-status .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      transition: all 0.3s ease;
+    }
+
+    .monitor-status.active .status-dot {
+      background: var(--accent-success);
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      box-shadow: 0 0 8px var(--accent-success);
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+      }
+    }
+
+    input[type="text"], input[type="url"], input[type="password"] {
+      flex: 1;
+      padding: 11px 16px;
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      background: var(--bg-secondary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .connection-status {
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.813rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border: 2px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .connection-status.connected {
+      background: color-mix(in srgb, var(--accent-success) 10%, transparent);
+      color: var(--accent-success);
+      border-color: var(--accent-success);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .connection-status.disconnected {
+      background: color-mix(in srgb, var(--accent-danger) 10%, transparent);
+      color: var(--accent-danger);
+      border-color: var(--accent-danger);
+    }
+
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Table - Ultra Modern */
+    .table-container {
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px var(--shadow);
+      border: 1px solid var(--border-color);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: var(--bg-tertiary);
+      padding: 16px 20px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 0.813rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+      padding: 18px 20px;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.875rem;
+    }
+
+    tr {
+      transition: background 0.2s ease;
+    }
+
+    tr:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .status-badge {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .status-UP { 
+      background: color-mix(in srgb, var(--accent-success) 20%, transparent); 
+      color: var(--accent-success);
+      border: 1px solid var(--accent-success);
+    }
+    .status-DOWN { 
+      background: color-mix(in srgb, var(--accent-danger) 20%, transparent); 
+      color: var(--accent-danger);
+      border: 1px solid var(--accent-danger);
+    }
+    .status-TIMEOUT { 
+      background: color-mix(in srgb, var(--accent-warning) 20%, transparent); 
+      color: var(--accent-warning);
+      border: 1px solid var(--accent-warning);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state h3 {
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    /* Modal - Premium Design */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      background: var(--bg-secondary);
+      padding: 32px;
+      border-radius: 20px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border-color);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      color: var(--text-primary);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+    }
+
+    /* Notification Modal - Modern */
+    .notification-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .notification-modal.show {
+      display: flex;
+    }
+
+    .notification-content {
+      background: var(--bg-secondary);
+      border-radius: 20px;
+      padding: 28px 32px;
+      max-width: 480px;
+      width: 90%;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+      position: relative;
+      animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .notification-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .notification-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+    }
+
+    .notification-icon.success {
+      background: var(--gradient-success);
+      color: white;
+    }
+
+    .notification-icon.error {
+      background: var(--gradient-danger);
+      color: white;
+    }
+
+    .notification-icon.warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+    }
+
+    .notification-icon.info {
+      background: var(--gradient-primary);
+      color: white;
+    }
+
+    .notification-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .notification-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var (--text-primary);
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+
+    .notification-message {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    .notification-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-secondary);
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+
+    .notification-close:hover {
+      background: var(--accent-danger);
+      color: white;
+      border-color: var(--accent-danger);
+      transform: scale(1.1) rotate(90deg);
+    }
+
+    .notification-actions {
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .notification-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .notification-btn-primary {
+      background: var(--gradient-primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .notification-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Error Carousel - Premium Design */
+    .error-carousel-container {
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 28px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 6px -1px var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .error-carousel-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-danger);
+    }
+
+    .error-carousel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .error-carousel-header h3 {
+      font-size: 1.125rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .error-count {
+      background: var(--gradient-danger);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.813rem;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .error-carousel-wrapper {
+      position: relative;
+      overflow: hidden;
+      --gap: 1.25rem;
+      mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+      -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    }
+
+    .error-carousel-track {
+      display: flex;
+      gap: var(--gap);
+      width: max-content;
+      animation: marquee 40s linear infinite;
+    }
+
+    .error-carousel-track:hover {
+      animation-play-state: paused;
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(calc(-50% - var(--gap) / 2)); }
+    }
+
+    .error-card {
+      position: relative;
+      min-width: 340px;
+      max-width: 340px;
+      height: 160px;
+      flex-shrink: 0;
+      cursor: pointer;
+      border-radius: 14px;
+      border: 2px solid var(--border-color);
+      padding: 20px;
+      background: var(--bg-tertiary);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .error-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-danger);
+    }
+
+    .error-card:hover {
+      background: var(--bg-hover);
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 12px 24px var(--shadow);
+      border-color: var(--accent-danger);
+    }
+
+    .error-card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .error-card-icon {
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      background: var(--gradient-danger);
+      color: white;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .error-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .error-card-title {
+      font-size: 0.938rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .error-card-tag {
+      font-size: 0.75rem;
+      color: var(--accent-danger);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .error-card-message {
+      font-size: 0.813rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .error-card-meta {
+      display: flex;
+      gap: 16px;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .error-card-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .error-carousel-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .error-carousel-empty-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .error-carousel-empty h4 {
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+      color: var(--accent-success);
+      font-weight: 800;
+    }
+
+    .error-carousel-empty p {
+      font-size: 0.938rem;
+      font-weight: 500;
+    }
+
+    /* Scrollbar - Custom */
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--text-muted);
+      border-radius: 10px;
+      border: 2px solid var(--bg-tertiary);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-secondary);
+    }
+
+    /* URL Detail Modal - Premium Design */
+    .url-detail-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(10px);
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .url-detail-modal.show {
+      display: flex;
+    }
+
+    .url-detail-content {
+      background: var(--bg-secondary);
+      border-radius: 24px;
+      max-width: 700px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border-color);
+      position: relative;
+      animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .url-detail-header {
+      position: sticky;
+      top: 0;
+      background: var(--bg-tertiary);
+      padding: 24px 32px;
+      border-bottom: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+    }
+
+    .url-detail-title-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .url-detail-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+      word-break: break-word;
+    }
+
+    .url-detail-subtitle {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      word-break: break-all;
+    }
+
+    .url-detail-close {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: var(--text-secondary);
+      font-size: 1.5rem;
+      font-weight: bold;
+      flex-shrink: 0;
+      margin-left: 16px;
+    }
+
+    .url-detail-close:hover {
+      background: var(--accent-danger);
+      color: white;
+      border-color: var(--accent-danger);
+      transform: scale(1.1) rotate(90deg);
+    }
+
+    .url-detail-body {
+      padding: 32px;
+    }
+
+    .url-status-card {
+      background: var(--bg-tertiary);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 2px solid var(--border-color);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .url-status-card.status-up {
+      border-color: var(--accent-success);
+      background: color-mix(in srgb, var(--accent-success) 5%, var(--bg-tertiary));
+    }
+
+    .url-status-card.status-down {
+      border-color: var(--accent-danger);
+      background: color-mix(in srgb, var(--accent-danger) 5%, var(--bg-tertiary));
+    }
+
+    .url-status-card.status-warning {
+      border-color: var(--accent-warning);
+      background: color-mix(in srgb, var(--accent-warning) 5%, var (--bg-tertiary));
+    }
+
+    .url-status-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--border-color);
+    }
+
+    .url-status-card.status-up::before {
+      background: var(--gradient-success);
+    }
+
+    .url-status-card.status-down::before {
+      background: var(--gradient-danger);
+    }
+
+    .url-status-card.status-warning::before {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .status-display {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .status-icon-large {
+      width: 72px;
+      height: 72px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .status-icon-large.up {
+      background: var(--gradient-success);
+    }
+
+    .status-icon-large.down {
+      background: var(--gradient-danger);
+    }
+
+    .status-icon-large.warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .status-info {
+      flex: 1;
+    }
+
+    .status-label {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+      letter-spacing: -0.5px;
+    }
+
+    .status-message {
+      font-size: 0.938rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    .detail-section {
+      margin-bottom: 24px;
+    }
+
+    .detail-section-title {
+      font-size: 1.125rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.5px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .detail-item {
+      background: var(--bg-tertiary);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .detail-item:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+    }
+
+    .detail-item-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .detail-item-value {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      word-break: break-word;
+    }
+
+    .error-details {
+      background: color-mix(in srgb, var(--accent-danger) 10%, var(--bg-tertiary));
+      border: 2px solid var(--accent-danger);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+
+    .error-details-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--accent-danger);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .error-details-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .error-details-list li {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .error-details-list li:last-child {
+      border-bottom: none;
+    }
+
+    .error-details-list li::before {
+      content: '❌';
+      flex-shrink: 0;
+      font-size: 1rem;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 40px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 12px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border-color);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -34px;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      border: 3px solid var(--bg-secondary);
+      box-shadow: 0 0 0 2px var(--accent-primary);
+    }
+
+    .timeline-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .timeline-content {
+      background: var(--bg-tertiary);
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .url-detail-actions {
+      padding: 24px 32px;
+      border-top: 2px solid var(--border-color);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      background: var(--bg-tertiary);
+      position: sticky;
+      bottom: 0;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 16px;
+      }
+
+      header {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px;
+      }
+
+      .header-content {
+        flex-direction: column;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+
+      .interval-selector {
+        width: 100%;
+      }
+
+      .error-card {
+        min-width: 300px;
+        max-width: 300px;
+      }
+
+      table {
+        font-size: 0.813rem;
+      }
+
+      th, td {
+        padding: 12px;
+      }
+      
+      .url-detail-content {
+        width: 95%;
+        max-height: 95vh;
+      }
+
+      .url-detail-header {
+        padding: 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .url-detail-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+      }
+
+      .url-detail-body {
+        padding: 20px;
+      }
+
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .status-display {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+
+    /* Loading Animation */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.6s linear infinite;
+    }
+  </style>
+</head>
+<body>
+  <!-- Hidden SVG Icons Library -->
+  <svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Search/Monitor Icon -->
+      <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </symbol>
+
+      <!-- Moon Icon -->
+      <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 A7 7 0 0 0 21 12.79z"></path>
+      </symbol>
+
+      <!-- Sun Icon -->
+      <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </symbol>
+
+      <!-- Plus Icon -->
+      <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </symbol>
+
+      <!-- Chart/Sheet Icon -->
+      <symbol id="icon-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 3v18h18"></path>
+        <path d="m19 9-5 5-4-4-3 3"></path>
+      </symbol>
+
+      <!-- Clipboard Icon -->
+      <symbol id="icon-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+      </symbol>
+
+      <!-- Clock Icon -->
+      <symbol id="icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </symbol>
+
+      <!-- Play Icon -->
+      <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </symbol>
+
+      <!-- Pause Icon -->
+      <symbol id="icon-pause" viewBox="0 0 24 24" fill="currentColor">
+        <rect x="6" y="4" width="4" height="16"></rect>
+        <rect x="14" y="4" width="4" height="16"></rect>
+      </symbol>
+
+      <!-- Refresh Icon -->
+      <symbol id="icon-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"></polyline>
+        <polyline points="1 20 1 14 7 14"></polyline>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+      </symbol>
+
+      <!-- Trash Icon -->
+      <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+      </symbol>
+
+      <!-- Check Icon -->
+      <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </symbol>
+
+      <!-- X Icon -->
+      <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </symbol>
+
+      <!-- Alert Triangle Icon -->
+      <symbol id="icon-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </symbol>
+
+      <!-- Info Icon -->
+      <symbol id="icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </symbol>
+
+      <!-- Empty Box Icon -->
+      <symbol id="icon-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="container">
+    <header>
+      <div class="header-content">
+        <div class="header-icon">🔍</div>
+        <div>
+          <h1>Dashboard Monitoring</h1>
+          <p class="subtitle">Sistem monitoring real-time untuk ketersediaan website</p>
+        </div>
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <svg class="icon" id="themeIcon"><use href="#icon-moon"></use></svg>
+        <span id="themeText">Mode Gelap</span>
+      </button>
+    </header>
+
+    <!-- Stats Cards -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">🌐 Total URL</div>
+        <div class="stat-value" id="totalUrls">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">✅ Sehat</div>
+        <div class="stat-value" style="color: var(--accent-success);" id="healthyUrls">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">⚠️ Bermasalah</div>
+        <div class="stat-value" style="color: var(--accent-danger);" id="issuesUrls">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">🔌 Status Koneksi</div>
+        <div id="connectionStatus" class="connection-status disconnected">
+          <span class="status-indicator" style="background: currentColor;"></span>
+          Terputus
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Carousel -->
+    <div class="error-carousel-container" id="errorCarouselContainer" style="display: none;">
+      <div class="error-carousel-header">
+        <h3>
+          <span>⚠️ URLs dengan Error</span>
+        </h3>
+        <span class="error-count" id="errorCarouselCount">0</span>
+      </div>
+      <div class="error-carousel-wrapper">
+        <div class="error-carousel-track" id="errorCarouselTrack">
+          <!-- Error cards akan di-generate oleh JavaScript -->
+        </div>
+      </div>
+      <div class="error-carousel-empty" id="errorCarouselEmpty">
+        <div class="error-carousel-empty-icon">✅</div>
+        <h4>Semua URL Berjalan Normal!</h4>
+        <p>Tidak ada URL yang mengalami error saat ini.</p>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="btn btn-primary" onclick="showAddUrlModal()">
+        <svg class="icon icon-sm"><use href="#icon-plus"></use></svg>
+        Tambah URL
+      </button>
+      
+      <button class="btn btn-warning" onclick="syncGoogleSheets()" id="syncSheetsBtn">
+        <svg class="icon icon-sm"><use href="#icon-chart"></use></svg>
+        Sync Sheets
+      </button>
+      
+      <div class="interval-selector">
+        <label>Sync:</label>
+        <select id="syncIntervalSelect" onchange="handleSyncIntervalChange()">
+          <option value="60000">1 Menit</option>
+          <option value="180000">3 Menit</option>
+          <option value="300000" selected>5 Menit</option>
+          <option value="600000">10 Menit</option>
+          <option value="900000">15 Menit</option>
+          <option value="1800000">30 Menit</option>
+          <option value="3600000">1 Jam</option>
+        </select>
+      </div>
+      
+      <button id="autoSyncBtn" class="btn btn-info" onclick="toggleAutoSync()">
+        <svg class="icon icon-sm"><use href="#icon-clock"></use></svg>
+        <span id="autoSyncBtnText">Auto-Sync</span>
+      </button>
+      
+      <div class="interval-selector">
+        <label>Interval:</label>
+        <select id="intervalSelect" onchange="handleIntervalChange()">
+          <option value="15000">15 Detik</option>
+          <option value="20000">20 Detik</option>
+          <option value="35000">35 Detik</option>
+          <option value="60000" selected>1 Menit</option>
+          <option value="300000">5 Menit</option>
+          <option value="900000">15 Menit</option>
+          <option value="1200000">20 Menit</option>
+        </select>
+      </div>
+
+      <button id="autoMonitorBtn" class="btn btn-success" onclick="toggleAutoMonitor()">
+        <svg class="icon icon-sm"><use href="#icon-play"></use></svg>
+        <span id="autoMonitorText">Auto-Monitor</span>
+      </button>
+
+      <div class="monitor-status" id="monitorStatus">
+        <span class="status-dot"></span>
+        <span id="monitorStatusText">Monitor: OFF</span>
+      </div>
+      
+      <div class="monitor-status" id="autoSyncStatus">
+        <span class="status-dot"></span>
+        <span id="autoSyncText">Sync: OFF</span>
+      </div>
+
+      <div style="flex: 1;"></div>
+      <span style="color: var(--text-muted); font-size: 0.813rem; font-weight: 600;">⏰ Update: <span id="lastUpdate">-</span></span>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>URL</th>
+            <th>Status</th>
+            <th>Respons</th>
+            <th>Terakhir Cek</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="urlTableBody">
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <svg class="icon icon-xl empty-state-icon"><use href="#icon-box"></use></svg>
+                <h3>Belum ada URL</h3>
+                <p>Tambahkan URL untuk mulai monitoring</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add URL Modal -->
+  <div id="addUrlModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Tambah URL Baru</h2>
+      </div>
+      <form onsubmit="addUrl(event)">
+        <div class="form-group">
+          <label class="form-label">URL *</label>
+          <input type="url" id="urlInput" placeholder="https://contoh.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nama</label>
+          <input type="text" id="nameInput" placeholder="Website Saya">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Deskripsi</label>
+          <input type="text" id="descriptionInput" placeholder="Website produksi">
+        </div>
+        
+        <!-- Authentication Section -->
+        <div class="form-group">
+          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+            <input type="checkbox" id="requiresAuthCheckbox" onchange="toggleAuthFields()" style="width: 18px; height: 18px; cursor: pointer;">
+            <span class="form-label" style="margin: 0;">Memerlukan Autentikasi</span>
+          </label>
+        </div>
+        
+        <div id="authFields" style="display: none; background: var(--bg-tertiary); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+          <h4 style="color: var(--text-primary); margin-bottom: 15px; font-size: 1rem;">Kredensial Login</h4>
+          
+          <div class="form-group">
+            <label class="form-label">Tipe Login *</label>
+            <select id="authLoginType" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.875rem;" onchange="toggleModalFields()">
+              <option value="page">Login Page (Halaman terpisah)</option>
+              <option value="modal">Login Modal (Popup di halaman)</option>
+            </select>
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Pilih apakah login menggunakan halaman terpisah atau modal popup</small>
+          </div>
+          
+          <div id="modalTriggerField" style="display: none;">
+            <div class="form-group">
+              <label class="form-label">Modal Trigger Selector (opsional)</label>
+              <input type="text" id="authModalTrigger" placeholder='button:has-text("Login")'>
+              <small style="color: var(--text-muted); font-size: 0.75rem;">CSS selector untuk tombol yang membuka modal login</small>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Username / Email *</label>
+            <input type="text" id="authUsername" placeholder="username@email.com">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Password *</label>
+            <input type="password" id="authPassword" placeholder="••••••••">
+          </div>
+          
+          <div class="form-group" id="loginUrlField">
+            <label class="form-label">URL Login (opsional)</label>
+            <input type="url" id="authLoginUrl" placeholder="https://contoh.com/login">
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Kosongkan jika sama dengan URL utama</small>
+          </div>
+          
+          <details style="margin-top: 15px;">
+            <summary style="cursor: pointer; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 10px;">⚙️ Pengaturan Lanjutan (opsional)</summary>
+            
+            <div style="padding-left: 15px; margin-top: 10px;">
+              <div class="form-group">
+                <label class="form-label">Username Selector</label>
+                <input type="text" id="authUsernameSelector" placeholder='input[name="username"]'>
+                <small style="color: var(--text-muted); font-size: 0.7rem;">CSS selector untuk input username</small>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Password Selector</label>
+                <input type="text" id="authPasswordSelector" placeholder='input[name="password"]'>
+                <small style="color: var(--text-muted); font-size: 0.7rem;">CSS selector untuk input password</small>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Submit Button Selector</label>
+                <input type="text" id="authSubmitSelector" placeholder='button[type="submit"]'>
+                <small style="color: var (--text-muted); font-size: 0.7rem;">CSS selector untuk tombol submit</small>
+              </div>
+            </div>
+          </details>
+        </div>
+        
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn" onclick="closeAddUrlModal()" style="background: var(--text-muted); color: white;">Batal</button>
+          <button type="submit" class="btn btn-primary">Tambah URL</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Notification Modal -->
+  <div id="notificationModal" class="notification-modal">
+    <div class="notification-content">
+      <div class="notification-header">
+        <div id="notificationIcon" class="notification-icon"></div>
+        <div class="notification-body">
+          <div id="notificationTitle" class="notification-title"></div>
+          <div id="notificationMessage" class="notification-message"></div>
+        </div>
+      </div>
+      <div class="notification-close" onclick="closeNotificationModal()">✕</div>
+      <div class="notification-actions">
+        <button class="notification-btn notification-btn-primary" onclick="closeNotificationModal()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- URL Detail Modal -->
+  <div id="urlDetailModal" class="url-detail-modal">
+    <div class="url-detail-content">
+      <div class="url-detail-header">
+        <div class="url-detail-title-section">
+          <div class="url-detail-title" id="urlDetailTitle">URL Details</div>
+          <div class="url-detail-subtitle">
+            <svg class="icon icon-sm"><use href="#icon-info"></use></svg>
+            <span id="urlDetailUrl">-</span>
+          </div>
+        </div>
+        <div class="url-detail-close" onclick="closeUrlDetailModal()">×</div>
+      </div>
+
+      <div class="url-detail-body">
+        <!-- Status Card -->
+        <div class="url-status-card" id="urlStatusCard">
+          <div class="status-display">
+            <div class="status-icon-large" id="urlStatusIcon">
+              ✓
+            </div>
+            <div class="status-info">
+              <div class="status-label" id="urlStatusLabel">ONLINE</div>
+              <div class="status-message" id="urlStatusMessage">Semua sistem berjalan normal</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="detail-section">
+          <div class="detail-section-title">
+            <svg class="icon"><use href="#icon-chart"></use></svg>
+            Metrik Performa
+          </div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-item-label">
+                <svg class="icon" style="width: 12px; height: 12px;"><use href="#icon-clock"></use></svg>
+                Response Time
+              </div>
+              <div class="detail-item-value" id="urlResponseTime">-</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-item-label">
+                <svg class="icon" style="width: 12px; height: 12px;"><use href="#icon-check"></use></svg>
+                HTTP Status
+              </div>
+              <div class="detail-item-value" id="urlHttpStatus">-</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-item-label">
+                <svg class="icon" style="width: 12px; height: 12px;"><use href="#icon-clock"></use></svg>
+                Last Checked
+              </div>
+              <div class="detail-item-value" style="font-size: 0.875rem;" id="urlLastChecked">-</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-item-label">
+                <svg class="icon" style="width: 12px; height: 12px;"><use href="#icon-info"></use></svg>
+                Content Size
+              </div>
+              <div class="detail-item-value" id="urlContentSize">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Details (shown only if there are errors) -->
+        <div class="detail-section" id="urlErrorSection" style="display: none;">
+          <div class="detail-section-title">
+            <svg class="icon"><use href="#icon-alert"></use></svg>
+            Detail Error & Diagnosa
+          </div>
+          
+          <!-- Error Details Card with comprehensive information -->
+          <div class="error-details" id="urlErrorDetailsCard" style="display: none; margin-bottom: 20px;">
+            <div class="error-details-title">
+              <svg class="icon"><use href="#icon-alert"></use></svg>
+              Ringkasan Masalah
+            </div>
+            <div id="urlErrorSummary" style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin-top: 12px; border-left: 4px solid var(--accent-danger);"></div>
+            
+            <div style="margin-top: 16px;">
+              <strong style="color: var(--accent-danger); font-size: 0.875rem;">📍 LOKASI KESALAHAN:</strong>
+              <div id="urlErrorLocation" style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin-top: 8px; font-size: 0.875rem; color: var(--text-secondary);"></div>
+            </div>
+            
+            <div style="margin-top: 16px;">
+              <strong style="color: var(--accent-warning); font-size: 0.875rem;">❓ ALASAN DETAIL:</strong>
+              <div id="urlErrorReason" style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin-top: 8px; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;"></div>
+            </div>
+            
+            <div style="margin-top: 16px;">
+              <strong style="color: var(--accent-success); font-size: 0.875rem;">💡 REKOMENDASI PERBAIKAN:</strong>
+              <div id="urlErrorRecommendation" style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin-top: 8px; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;"></div>
+            </div>
+            
+            <!-- Screenshot if available -->
+            <div id="urlErrorScreenshot" style="margin-top: 16px; display: none;">
+              <strong style="color: var(--accent-info); font-size: 0.875rem;">📸 SCREENSHOT SAAT ERROR:</strong>
+              <div style="margin-top: 8px; padding: 8px; background: var(--bg-secondary); border-radius: 8px;">
+                <img id="urlScreenshotImage" src="" alt="Error Screenshot" style="max-width: 100%; border-radius: 6px; border: 2px solid var(--border-color);">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Original error list (fallback if errorDetails not available) -->
+          <div class="error-details" id="urlErrorListCard">
+            <div class="error-details-title">
+              <svg class="icon"><use href="#icon-x"></use></svg>
+              Masalah yang Terdeteksi
+            </div>
+            <ul class="error-details-list" id="urlErrorList">
+              <!-- Error items will be inserted here -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="detail-section">
+          <div class="detail-section-title">
+            <svg class="icon"><use href="#icon-clipboard"></use></svg>
+            Informasi Tambahan
+          </div>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-time">URL</div>
+              <div class="timeline-content" id="urlFullUrl">-</div>
+            </div>
+            <div class="timeline-item" id="urlNameSection">
+              <div class="timeline-time">Nama</div>
+              <div class="timeline-content" id="urlName">-</div>
+            </div>
+            <div class="timeline-item" id="urlDescSection">
+              <div class="timeline-time">Deskripsi</div>
+              <div class="timeline-content" id="urlDescription">-</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-time">Autentikasi</div>
+              <div class="timeline-content" id="urlAuth">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="url-detail-actions">
+        <button class="btn btn-primary btn-sm" onclick="recheckUrlFromModal()">
+          <svg class="icon icon-sm"><use href="#icon-refresh"></use></svg>
+          Cek Ulang
+        </button>
+        <button class="btn" onclick="closeUrlDetailModal()" style="background: var(--text-muted); color: white;">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Theme Toggle Function
+    function toggleTheme() {
+      const html = document.documentElement;
+      const themeIcon = document.getElementById('themeIcon');
+      const themeText = document.getElementById('themeText');
+      const currentTheme = html.getAttribute('data-theme');
+      
+      if (currentTheme === 'light') {
+        html.removeAttribute('data-theme');
+        themeIcon.innerHTML = '<use href="#icon-moon"></use>';
+        themeText.textContent = 'Mode Gelap';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        html.setAttribute('data-theme', 'light');
+        themeIcon.innerHTML = '<use href="#icon-sun"></use>';
+        themeText.textContent = 'Mode Terang';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    // Load saved theme
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      const html = document.documentElement;
+      const themeIcon = document.getElementById('themeIcon');
+      const themeText = document.getElementById('themeText');
+      
+      if (savedTheme === 'light') {
+        html.setAttribute('data-theme', 'light');
+        themeIcon.innerHTML = '<use href="#icon-sun"></use>';
+        themeText.textContent = 'Mode Terang';
+      }
+    }
+
+    // WebSocket Connection
+    let ws = null;
+    let autoMonitorInterval = null;
+    let autoSyncInterval = null;
+    let isAutoMonitoring = false;
+    let isAutoSyncing = false;
+    let previousUrlStates = new Map(); // Track previous states for status change detection
+
+    function connectWebSocket() {
+      ws = new WebSocket(`ws://${window.location.host}`);
+      
+      ws.onopen = () => {
+        updateConnectionStatus(true);
+        showModal('Terhubung ke server', 'success');
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('📨 WebSocket message received:', data);
+        
+        // ✅ Handle monitoring_update message type
+        if (data.type === 'monitoring_update' && data.data) {
+          updateSingleUrl(data.data);
+          // ✅ Check for status changes and show notification
+          checkStatusChangeAndNotify(data.data);
+        } else if (data.type === 'update') {
+          updateDashboard(data.data);
+        } else if (data.type === 'status_change') {
+          // ✅ Show notification for status changes
+          const { urlName, oldStatus, newStatus, url } = data.data;
+          const statusChangeMessage = `${urlName || url}: ${oldStatus} → ${newStatus}`;
+          
+          // ✅ Determine notification type based on new status
+          let notificationType = 'info';
+          if (newStatus === 'DOWN' || newStatus === 'ERROR' || newStatus === 'TIMEOUT') {
+            notificationType = 'error';
+          } else if (newStatus === 'PARTIAL') {
+            notificationType = 'warning';
+          } else if (newStatus === 'UP' && (oldStatus === 'DOWN' || oldStatus === 'ERROR')) {
+            notificationType = 'success';
+          }
+          
+          showModal(statusChangeMessage, notificationType);
+          loadUrls(); // Reload all URLs to reflect changes
+        }
+      };
+
+      ws.onclose = () => {
+        updateConnectionStatus(false);
+        setTimeout(connectWebSocket, 3000);
+      };
+
+      ws.onerror = () => {
+        updateConnectionStatus(false);
+      };
+    }
+
+    // ✅ NEW: Check for status changes and show notification
+    function checkStatusChangeAndNotify(urlData) {
+      const urlId = urlData.urlId || urlData._id;
+      const currentStatus = urlData.status;
+      const previousStatus = previousUrlStates.get(urlId);
+      
+      // If status has changed
+      if (previousStatus && previousStatus !== currentStatus) {
+        const urlName = urlData.name || urlData.url;
+        const statusChangeMessage = `${urlName}: ${previousStatus} → ${currentStatus}`;
+        
+        // Determine notification type based on status change
+        let notificationType = 'info';
+        
+        // Status berubah menjadi DOWN/ERROR/PARTIAL/TIMEOUT
+        if (currentStatus === 'DOWN' || currentStatus === 'ERROR' || 
+            currentStatus === 'TIMEOUT' || currentStatus === 'PARTIAL' ||
+            currentStatus === 'EMPTY' || currentStatus === 'NOT_PLAYABLE' ||
+            currentStatus === 'IFRAME_FAILED' || currentStatus === 'JS_ERROR' ||
+            currentStatus === 'NETWORK_ERROR') {
+          notificationType = 'error';
+          console.log('🚨 ERROR DETECTED:', statusChangeMessage);
+        } 
+        // Status berubah dari error ke UP (recovery)
+        else if (currentStatus === 'UP' && 
+                 (previousStatus === 'DOWN' || previousStatus === 'ERROR' || 
+                  previousStatus === 'TIMEOUT' || previousStatus === 'PARTIAL')) {
+          notificationType = 'success';
+          console.log('✅ RECOVERY DETECTED:', statusChangeMessage);
+        }
+        
+        // Show toast notification
+        showModal(statusChangeMessage, notificationType);
+      }
+      
+      // Update previous state
+      previousUrlStates.set(urlId, currentStatus);
+    }
+
+    // ✅ UPDATE: Update single URL in the dashboard without full reload
+    function updateSingleUrl(urlData) {
+      console.log('🔄 Updating single URL:', urlData);
+      
+      // Find the URL in the current dashboard and update it
+      const row = document.querySelector(`button[onclick="checkUrl('${urlData.urlId}')"]`)?.closest('tr');
+      if (row) {
+        // Update status badge
+        const statusBadge = row.querySelector('.status-badge');
+        if (statusBadge) {
+          statusBadge.className = `status-badge status-${urlData.status}`;
+          statusBadge.textContent = urlData.status || 'UNKNOWN';
+        }
+        
+        // Update response time
+        const responseTd = row.querySelectorAll('td')[2];
+        if (responseTd) {
+          responseTd.textContent = urlData.responseTime ? `${urlData.responseTime}ms` : '-';
+        }
+        
+        // Update last checked time
+        const lastCheckedTd = row.querySelectorAll('td')[3];
+        if (lastCheckedTd) {
+          lastCheckedTd.innerHTML = `<div style="font-size: 0.813rem;">${new Date().toLocaleString('id-ID')}</div>`;
+        }
+        
+        console.log('✅ UI updated for URL:', urlData.urlId);
+      }
+      
+      // Update stats and error carousel
+      loadUrls();
+    }
+
+    function updateConnectionStatus(connected) {
+      const statusEl = document.getElementById('connectionStatus');
+      if (connected) {
+        statusEl.className = 'connection-status connected';
+        statusEl.innerHTML = '<span class="status-indicator" style="background: currentColor;"></span>Terhubung';
+      } else {
+        statusEl.className = 'connection-status disconnected';
+        statusEl.innerHTML = '<span class="status-indicator" style="background: currentColor;"></span>Terputus';
+      }
+    }
+
+    // Modal Functions
+    function showModal(message, type = 'info') {
+      showNotificationModal(message, type);
+    }
+
+    function showNotificationModal(message, type = 'info') {
+      const modal = document.getElementById('notificationModal');
+      const icon = document.getElementById('notificationIcon');
+      const title = document.getElementById('notificationTitle');
+      const messageEl = document.getElementById('notificationMessage');
+      
+      // Set icon and title based on type
+      const iconMap = {
+        'success': { icon: '✓', title: 'Berhasil', class: 'success' },
+        'error': { icon: '✕', title: 'Error', class: 'error' },
+        'warning': { icon: '⚠', title: 'Peringatan', class: 'warning' },
+        'info': { icon: 'ℹ', title: 'Informasi', class: 'info' }
+      };
+      
+      const config = iconMap[type] || iconMap['info'];
+      
+      icon.textContent = config.icon;
+      icon.className = `notification-icon ${config.class}`;
+      title.textContent = config.title;
+      messageEl.textContent = message;
+      
+      // Show modal
+      modal.classList.add('show');
+      
+      // Auto-hide after 3 seconds
+      setTimeout(() => {
+        closeNotificationModal();
+      }, 3000);
+    }
+
+    function closeNotificationModal() {
+      const modal = document.getElementById('notificationModal');
+      modal.classList.remove('show');
+    }
+
+    function showAddUrlModal() {
+      document.getElementById('addUrlModal').classList.add('active');
+    }
+
+    function closeAddUrlModal() {
+      document.getElementById('addUrlModal').classList.remove('active');
+      document.getElementById('urlInput').value = '';
+      document.getElementById('nameInput').value = '';
+      document.getElementById('descriptionInput').value = '';
+      document.getElementById('requiresAuthCheckbox').checked = false;
+      document.getElementById('authFields').style.display = 'none';
+      document.getElementById('authUsername').value = '';
+      document.getElementById('authPassword').value = '';
+      document.getElementById('authLoginUrl').value = '';
+      document.getElementById('authUsernameSelector').value = '';
+      document.getElementById('authPasswordSelector').value = '';
+      document.getElementById('authSubmitSelector').value = '';
+      document.getElementById('authModalTrigger').value = '';
+    }
+
+    function toggleAuthFields() {
+      const authFields = document.getElementById('authFields');
+      const checkbox = document.getElementById('requiresAuthCheckbox');
+      authFields.style.display = checkbox.checked ? 'block' : 'none';
+    }
+
+    function toggleModalFields() {
+      const loginType = document.getElementById('authLoginType').value;
+      const modalTriggerField = document.getElementById('modalTriggerField');
+      const loginUrlField = document.getElementById('loginUrlField');
+      
+      if (loginType === 'modal') {
+        modalTriggerField.style.display = 'block';
+        loginUrlField.style.display = 'none';
+      } else {
+        modalTriggerField.style.display = 'none';
+        loginUrlField.style.display = 'block';
+      }
+    }
+
+    // Add URL Function
+    async function addUrl(event) {
+      event.preventDefault();
+      
+      const url = document.getElementById('urlInput').value;
+      const name = document.getElementById('nameInput').value;
+      const description = document.getElementById('descriptionInput').value;
+      const requiresAuth = document.getElementById('requiresAuthCheckbox').checked;
+      
+      const payload = {
+        url,
+        name,
+        description,
+        requiresAuth
+      };
+
+      if (requiresAuth) {
+        payload.authCredentials = {
+          username: document.getElementById('authUsername').value,
+          password: document.getElementById('authPassword').value,
+          loginUrl: document.getElementById('authLoginUrl').value || url,
+          loginType: document.getElementById('authLoginType').value,
+          modalTriggerSelector: document.getElementById('authModalTrigger').value || null,
+          loginSelectors: {
+            username: document.getElementById('authUsernameSelector').value || 'input[name="username"]',
+            password: document.getElementById('authPasswordSelector').value || 'input[name="password"]',
+            submit: document.getElementById('authSubmitSelector').value || 'button[type="submit"]'
+          }
+        };
+      }
+
+      try {
+        const response = await fetch('/api/urls', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          showModal('URL berhasil ditambahkan', 'success');
+          closeAddUrlModal();
+          loadUrls();
+        } else {
+          const error = await response.json();
+          showModal(error.error || 'Gagal menambahkan URL', 'error');
+        }
+      } catch (error) {
+        showModal('Error: ' + error.message, 'error');
+      }
+    }
+
+    // Delete URL Function
+    async function deleteUrl(id) {
+      if (!confirm('Yakin ingin menghapus URL ini?')) return;
+
+      try {
+        const response = await fetch(`/api/urls/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+          showModal('URL berhasil dihapus', 'success');
+          loadUrls();
+        } else {
+          showModal('Gagal menghapus URL', 'error');
+        }
+      } catch (error) {
+        showModal('Error: ' + error.message, 'error');
+      }
+    }
+
+    // Check URL Function
+    async function checkUrl(id) {
+      try {
+        showModal('Memeriksa URL...', 'info');
+        const response = await fetch(`/api/urls/${id}/check`, { method: 'POST' });
+        
+        if (response.ok) {
+          showModal('Pemeriksaan selesai', 'success');
+          loadUrls();
+        } else {
+          showModal('Gagal memeriksa URL', 'error');
+        }
+      } catch (error) {
+        showModal('Error: ' + error.message, 'error');
+      }
+    }
+
+    // Google Sheets Functions
+    async function syncGoogleSheets() {
+      const btn = document.getElementById('syncSheetsBtn');
+      const originalText = btn.innerHTML;
+      
+      try {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading"></span> Syncing...';
+        
+        const response = await fetch('/api/sheets/sync', { method: 'POST' });
+        const result = await response.json();
+        
+        if (response.ok) {
+          showModal(`Sync berhasil! ${result.syncedCount} data diperbarui`, 'success');
+          loadUrls();
+        } else {
+          showModal(result.error || 'Gagal sync dengan Google Sheets', 'error');
+        }
+      } catch (error) {
+        showModal('Error: ' + error.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    async function showGoogleSheetsInfo() {
+      try {
+        const response = await fetch('/api/sheets/info');
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          const data = result.data;
+          let message = `📊 Google Sheets Info\n\n`;
+          message += `Spreadsheet ID: ${data.spreadsheetId || 'N/A'}\n`;
+          message += `Range: ${data.range || 'N/A'}\n`;
+          message += `Total Rows: ${data.totalRows || 0}\n`;
+          message += `Last Synced: ${data.lastSynced || 'Belum pernah'}\n\n`;
+          message += `Preview Data:\n`;
+          
+          if (data.preview && data.preview.length > 0) {
+            data.preview.forEach((row, index) => {
+              message += `${index + 1}. ${row.url} - ${row.status || 'N/A'}\n`;
+            });
+          } else {
+            message += 'Tidak ada data';
+          }
+          
+          alert(message);
+        } else {
+          showModal(result.error || 'Gagal mengambil info Google Sheets', 'error');
+        }
+      } catch (error) {
+        showModal('Error: ' + error.message, 'error');
+      }
+    }
+
+    // Auto-Sync Functions
+    function toggleAutoSync() {
+      isAutoSyncing = !isAutoSyncing;
+      
+      const btn = document.getElementById('autoSyncBtn');
+      const statusEl = document.getElementById('autoSyncStatus');
+      const statusText = document.getElementById('autoSyncText');
+      const intervalSelect = document.getElementById('syncIntervalSelect');
+      
+      if (isAutoSyncing) {
+        const interval = parseInt(intervalSelect.value);
+        startAutoSync(interval);
+        
+        btn.style.background = 'var(--accent-danger)';
+        btn.querySelector('.icon use').setAttribute('href', '#icon-pause');
+        document.getElementById('autoSyncBtnText').textContent = 'Stop Auto-Sync';
+        
+        statusEl.classList.add('active');
+        statusText.textContent = 'Sync: ON';
+        
+        intervalSelect.disabled = false;
+        
+        showModal('Auto-sync diaktifkan', 'success');
+      } else {
+        stopAutoSync();
+        
+        btn.style.background = 'var(--accent-info)';
+        btn.querySelector('.icon use').setAttribute('href', '#icon-clock');
+        document.getElementById('autoSyncBtnText').textContent = 'Auto-Sync';
+        
+        statusEl.classList.remove('active');
+        statusText.textContent = 'Sync: OFF';
+        
+        intervalSelect.disabled = false;
+        
+        showModal('Auto-sync dinonaktifkan', 'info');
+      }
+    }
+
+    function startAutoSync(interval) {
+      // ✅ FIX: Always stop existing interval first
+      stopAutoSync();
+      
+      console.log('🔄 Starting auto-sync with interval:', interval);
+      
+      // Sync immediately
+      syncGoogleSheets();
+      
+      // Then sync at intervals
+      autoSyncInterval = setInterval(() => {
+        console.log('⏰ Auto-sync triggered');
+        syncGoogleSheets();
+      }, interval);
+    }
+
+    function stopAutoSync() {
+      // ✅ FIX: Clear interval properly
+      if (autoSyncInterval) {
+        console.log('⏹️ Stopping auto-sync');
+        clearInterval(autoSyncInterval);
+        autoSyncInterval = null;
+      }
+    }
+
+    function handleSyncIntervalChange() {
+      // ✅ FIX: Only restart if currently running
+      if (isAutoSyncing) {
+        const interval = parseInt(document.getElementById('syncIntervalSelect').value);
+        console.log('🔄 Restarting auto-sync with new interval:', interval);
+        startAutoSync(interval);
+        showModal('Interval sync diperbarui', 'info');
+      }
+    }
+
+    // Auto-Monitor Functions
+    function toggleAutoMonitor() {
+      isAutoMonitoring = !isAutoMonitoring;
+      
+      const btn = document.getElementById('autoMonitorBtn');
+      const statusEl = document.getElementById('monitorStatus');
+      const statusText = document.getElementById('monitorStatusText');
+      const intervalSelect = document.getElementById('intervalSelect');
+      
+      if (isAutoMonitoring) {
+        const interval = parseInt(intervalSelect.value);
+        startAutoMonitor(interval);
+        
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-danger');
+        btn.querySelector('.icon use').setAttribute('href', '#icon-pause');
+        document.getElementById('autoMonitorText').textContent = 'Stop Monitor';
+        
+        statusEl.classList.add('active');
+        statusText.textContent = 'Monitor: ON';
+        
+        intervalSelect.disabled = false;
+        
+        showModal('Auto-monitor diaktifkan', 'success');
+      } else {
+        stopAutoMonitor();
+        
+        btn.classList.remove('btn-danger');
+        btn.classList.add('btn-success');
+        btn.querySelector('.icon use').setAttribute('href', '#icon-play');
+        document.getElementById('autoMonitorText').textContent = 'Auto-Monitor';
+        
+        statusEl.classList.remove('active');
+        statusText.textContent = 'Monitor: OFF';
+        
+        intervalSelect.disabled = false;
+        
+        showModal('Auto-monitor dinonaktifkan', 'info');
+      }
+    }
+
+    async function startAutoMonitor(interval) {
+      // ✅ FIX: Always stop existing interval first
+      stopAutoMonitor();
+      
+      console.log('🔄 Starting auto-monitor with interval:', interval);
+      
+      // Check all URLs immediately
+      await checkAllUrls();
+      
+      // Then check at intervals
+      autoMonitorInterval = setInterval(async () => {
+        console.log('⏰ Auto-monitor triggered');
+        await checkAllUrls();
+      }, interval);
+    }
+
+    function stopAutoMonitor() {
+      // ✅ FIX: Clear interval properly
+      if (autoMonitorInterval) {
+        console.log('⏹️ Stopping auto-monitor');
+        clearInterval(autoMonitorInterval);
+        autoMonitorInterval = null;
+      }
+    }
+
+    async function checkAllUrls() {
+      // ✅ FIX: Only run if auto-monitoring is still active
+      if (!isAutoMonitoring) {
+        console.log('⚠️ Auto-monitor is OFF, skipping check');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/urls/check-all', { method: 'POST' });
+        
+        if (response.ok) {
+          console.log('✅ All URLs checked successfully');
+          loadUrls();
+        }
+      } catch (error) {
+        console.error('❌ Error checking all URLs:', error);
+      }
+    }
+
+    function handleIntervalChange() {
+      // ✅ FIX: Only restart if currently running
+      if (isAutoMonitoring) {
+        const interval = parseInt(document.getElementById('intervalSelect').value);
+        console.log('🔄 Restarting auto-monitor with new interval:', interval);
+        startAutoMonitor(interval);
+        showModal('Interval monitor diperbarui', 'info');
+      }
+    }
+
+    // Load URLs Function
+    async function loadUrls() {
+      try {
+        const response = await fetch('/api/urls');
+        const result = await response.json();
+        
+        // Handle response yang berupa object {success: true, data: urls}
+        const urls = result.data || result;
+        
+        updateDashboard(urls);
+      } catch (error) {
+        console.error('Error loading URLs:', error);
+      }
+    }
+
+    // Update Dashboard Function
+    function updateDashboard(urls) {
+      const tbody = document.getElementById('urlTableBody');
+      const totalUrls = document.getElementById('totalUrls');
+      const healthyUrls = document.getElementById('healthyUrls');
+      const issuesUrls = document.getElementById('issuesUrls');
+      const lastUpdate = document.getElementById('lastUpdate');
+
+      // Pastikan urls adalah array
+      if (!Array.isArray(urls) || urls.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <svg class="icon icon-xl empty-state-icon" style="opacity: 0.3;"><use href="#icon-box"></use></svg>
+                <h3>Belum ada URL</h3>
+                <p>Tambahkan URL untuk mulai monitoring</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        totalUrls.textContent = '0';
+        healthyUrls.textContent = '0';
+        issuesUrls.textContent = '0';
+        return;
+      }
+
+      const healthy = urls.filter(u => u.status === 'UP').length;
+      const issues = urls.length - healthy;
+
+      totalUrls.textContent = urls.length;
+      healthyUrls.textContent = healthy;
+      issuesUrls.textContent = issues;
+      lastUpdate.textContent = new Date().toLocaleTimeString('id-ID');
+
+      tbody.innerHTML = urls.map(url => `
+        <tr>
+          <td>
+            <div style="margin-bottom: 4px; font-weight: 600;">${url.name || url.url}</div>
+            <div style="font-size: 0.813rem; color: var(--text-muted);">${url.url}</div>
+            ${url.description ? `<div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">${url.description}</div>` : ''}
+          </td>
+          <td>
+            <span class="status-badge status-${url.status}">${url.status || 'UNKNOWN'}</span>
+            ${url.statusMessage ? `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">${url.statusMessage}</div>` : ''}
+          </td>
+          <td>
+            ${url.responseTime ? `${url.responseTime}ms` : '-'}
+          </td>
+          <td>
+            <div style="font-size: 0.813rem;">${url.lastChecked ? new Date(url.lastChecked).toLocaleString('id-ID') : 'Belum dicek'}</div>
+          </td>
+          <td>
+            <div class="actions">
+              <button class="btn btn-info btn-sm" onclick="showUrlDetail('${url._id}')" title="Lihat Detail">
+                <svg class="icon icon-sm"><use href="#icon-info"></use></svg>
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="checkUrl('${url._id}')">
+                <svg class="icon icon-sm"><use href="#icon-refresh"></use></svg>
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="deleteUrl('${url._id}')">
+                <svg class="icon icon-sm"><use href="#icon-trash"></use></svg>
+              </button>
+              <button class="btn btn-info btn-sm" onclick="showGoogleSheetsInfo()">
+                <svg class="icon icon-sm"><use href="#icon-clipboard"></use></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+      
+      // ✅ Update error carousel with current URLs
+      updateErrorCarousel(urls);
+    }
+
+    // ✅ NEW: Update Error Carousel Function
+    function updateErrorCarousel(urls) {
+      const container = document.getElementById('errorCarouselContainer');
+      const track = document.getElementById('errorCarouselTrack');
+      const emptyState = document.getElementById('errorCarouselEmpty');
+      const errorCount = document.getElementById('errorCarouselCount');
+      
+      if (!container || !track || !emptyState || !errorCount) {
+        console.warn('⚠️ Error carousel elements not found');
+        return;
+      }
+      
+      // Filter URLs with errors (not UP status)
+      const errorUrls = urls.filter(url => 
+        url.status && url.status !== 'UP'
+      );
+      
+      // Update error count
+      errorCount.textContent = errorUrls.length;
+      
+      if (errorUrls.length === 0) {
+        // Hide carousel, show empty state
+        container.style.display = 'none';
+        return;
+      }
+      
+      // Show carousel
+      container.style.display = 'block';
+      emptyState.style.display = 'none';
+      
+      // Generate error cards (duplicate for seamless loop)
+      const errorCards = errorUrls.map(url => createErrorCard(url)).join('');
+      
+      // Duplicate cards for seamless marquee effect
+      track.innerHTML = errorCards + errorCards;
+      
+      console.log(`✅ Error carousel updated with ${errorUrls.length} errors`);
+    }
+    
+    // ✅ NEW: Create Error Card HTML
+    function createErrorCard(url) {
+      const statusIcons = {
+        'DOWN': '🔴',
+        'TIMEOUT': '⏱️',
+        'EMPTY': '📭',
+        'PARTIAL': '⚠️',
+        'NOT_PLAYABLE': '🎬',
+        'IFRAME_FAILED': '🖼️',
+        'JS_ERROR': '⚠️',
+        'NETWORK_ERROR': '🌐'
+      };
+      
+      const icon = statusIcons[url.status] || '❌';
+      const timeAgo = url.lastChecked ? getTimeAgo(new Date(url.lastChecked)) : 'Unknown';
+      
+      return `
+        <div class="error-card" onclick="showErrorDetails('${url._id}')">
+          <div class="error-card-header">
+            <div class="error-card-icon">${icon}</div>
+            <div class="error-card-info">
+              <div class="error-card-title">${url.name || 'Unnamed URL'}</div>
+              <div class="error-card-tag">${url.status || 'ERROR'}</div>
+            </div>
+          </div>
+          <div class="error-card-message">
+            ${url.statusMessage || 'No error message available'}
+          </div>
+          <div class="error-card-meta">
+            <div class="error-card-meta-item">
+              <svg class="icon" style="width: 12px; height: 12px;"><use href="#icon-clock"></use></svg>
+              ${timeAgo}
+            </div>
+            <div class="error-card-meta-item">
+              ${url.responseTime ? `${url.responseTime}ms` : 'N/A'}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // ✅ NEW: Get time ago helper
+    function getTimeAgo(date) {
+      const seconds = Math.floor((new Date() - date) / 1000);
+      
+      if (seconds < 60) return `${seconds}s ago`;
+      if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+      return `${Math.floor(seconds / 86400)}d ago`;
+    }
+    
+    // ✅ NEW: Show error details modal
+    function showErrorDetails(urlId) {
+      // Find the URL data
+      fetch(`/api/urls`)
+        .then(res => res.json())
+        .then(result => {
+          const urls = result.data || result;
+          const url = urls.find(u => u._id === urlId);
+          
+          if (!url) {
+            showModal('URL not found', 'error');
+            return;
+          }
+          
+          let message = `URL: ${url.url}\n\n`;
+          message += `Status: ${url.status || 'UNKNOWN'}\n`;
+          message += `Error: ${url.statusMessage || 'No details'}\n`;
+          message += `Response Time: ${url.responseTime ? url.responseTime + 'ms' : 'N/A'}\n`;
+          message += `Last Checked: ${url.lastChecked ? new Date(url.lastChecked).toLocaleString('id-ID') : 'Never'}\n`;
+          
+          showModal(message, 'error');
+        })
+        .catch(err => {
+          showModal('Failed to load URL details', 'error');
+        });
+    }
+
+    // ✅ NEW: Show URL Detail Modal
+    let currentDetailUrlId = null;
+
+    async function showUrlDetail(urlId) {
+      currentDetailUrlId = urlId;
+      
+      try {
+        // Fetch URL details
+        const response = await fetch(`/api/urls`);
+        const result = await response.json();
+        const urls = result.data || result;
+        const url = urls.find(u => u._id === urlId);
+        
+        if (!url) {
+          showModal('URL tidak ditemukan', 'error');
+          return;
+        }
+        
+        // Update modal content
+        const modal = document.getElementById('urlDetailModal');
+        const statusCard = document.getElementById('urlStatusCard');
+        const statusIcon = document.getElementById('urlStatusIcon');
+        const statusLabel = document.getElementById('urlStatusLabel');
+        const statusMessage = document.getElementById('urlStatusMessage');
+        
+        // Set title and URL
+        document.getElementById('urlDetailTitle').textContent = url.name || 'URL Details';
+        document.getElementById('urlDetailUrl').textContent = url.url;
+        
+        // Set status card styling and content
+        statusCard.className = 'url-status-card';
+        statusIcon.className = 'status-icon-large';
+        
+        if (url.status === 'UP') {
+          statusCard.classList.add('status-up');
+          statusIcon.classList.add('up');
+          statusIcon.textContent = '✓';
+          statusLabel.textContent = 'ONLINE';
+          statusLabel.style.color = 'var(--accent-success)';
+          statusMessage.textContent = 'Website berjalan normal dan dapat diakses dengan baik';
+        } else if (url.status === 'DOWN' || url.status === 'ERROR') {
+          statusCard.classList.add('status-down');
+          statusIcon.classList.add('down');
+          statusIcon.textContent = '✕';
+          statusLabel.textContent = 'OFFLINE';
+          statusLabel.style.color = 'var(--accent-danger)';
+          statusMessage.textContent = 'Website tidak dapat diakses atau mengalami error';
+        } else {
+          statusCard.classList.add('status-warning');
+          statusIcon.classList.add('warning');
+          statusIcon.textContent = '⚠';
+          statusLabel.textContent = url.status || 'WARNING';
+          statusLabel.style.color = 'var(--accent-warning)';
+          statusMessage.textContent = 'Website mengalami masalah partial atau timeout';
+        }
+        
+        // Set metrics
+        document.getElementById('urlResponseTime').textContent = url.responseTime ? `${url.responseTime}ms` : 'N/A';
+        document.getElementById('urlHttpStatus').textContent = url.httpStatus || 'N/A';
+        document.getElementById('urlLastChecked').textContent = url.lastChecked 
+          ? new Date(url.lastChecked).toLocaleString('id-ID', { 
+              dateStyle: 'medium', 
+              timeStyle: 'short' 
+            })
+          : 'Belum pernah dicek';
+        document.getElementById('urlContentSize').textContent = url.contentSize 
+          ? formatBytes(url.contentSize) 
+          : 'N/A';
+        
+        // Show/hide error section and populate error details
+        const errorSection = document.getElementById('urlErrorSection');
+        const errorList = document.getElementById('urlErrorList');
+        
+        if (url.status !== 'UP' && url.status) {
+          errorSection.style.display = 'block';
+          errorList.innerHTML = generateErrorDiagnosis(url);
+        } else {
+          errorSection.style.display = 'none';
+        }
+        
+        // Set additional info
+        document.getElementById('urlFullUrl').textContent = url.url;
+        document.getElementById('urlName').textContent = url.name || '-';
+        document.getElementById('urlDescription').textContent = url.description || '-';
+        document.getElementById('urlAuth').textContent = url.requiresAuth ? 'Ya (Login Required)' : 'Tidak';
+        
+        // Show/hide optional sections
+        document.getElementById('urlNameSection').style.display = url.name ? 'block' : 'none';
+        document.getElementById('urlDescSection').style.display = url.description ? 'block' : 'none';
+        
+        // Show modal
+        modal.classList.add('show');
+        
+      } catch (error) {
+        console.error('Error loading URL details:', error);
+        showModal('Gagal memuat detail URL', 'error');
+      }
+    }
+    
+    function closeUrlDetailModal() {
+      const modal = document.getElementById('urlDetailModal');
+      modal.classList.remove('show');
+      currentDetailUrlId = null;
+    }
+    
+    async function recheckUrlFromModal() {
+      if (!currentDetailUrlId) return;
+      
+      try {
+        showModal('Memeriksa ulang URL...', 'info');
+        const response = await fetch(`/api/urls/${currentDetailUrlId}/check`, { method: 'POST' });
+        
+        if (response.ok) {
+          showModal('Pemeriksaan selesai', 'success');
+          // Reload modal with updated data
+          setTimeout(() => {
+            showUrlDetail(currentDetailUrlId);
+            loadUrls();
+          }, 500);
+        } else {
+          showModal('Gagal memeriksa URL', 'error');
+        }
+      } catch (error) {
+        showModal('Error: ' + error.message, 'error');
+      }
+    }
+    
+// Generate error diagnosis based on status
+    function generateErrorDiagnosis(url) {
+      const errorDetailsCard = document.getElementById('urlErrorDetailsCard');
+      const errorListCard = document.getElementById('urlErrorListCard');
+      const errorSummary = document.getElementById('urlErrorSummary');
+      const errorLocation = document.getElementById('urlErrorLocation');
+      const errorReason = document.getElementById('urlErrorReason');
+      const errorRecommendation = document.getElementById('urlErrorRecommendation');
+      const errorScreenshot = document.getElementById('urlErrorScreenshot');
+      const screenshotImage = document.getElementById('urlScreenshotImage');
+      
+      // ✅ Check if errorDetails is available from backend
+      if (url.errorDetails) {
+        // Show detailed error card, hide simple list
+        errorDetailsCard.style.display = 'block';
+        errorListCard.style.display = 'none';
+        
+        // Populate error details
+        errorSummary.innerHTML = `
+          <strong style="font-size: 1rem; color: var(--text-primary);">${url.errorDetails.summary || 'Error terdeteksi'}</strong>
+        `;
+        
+        errorLocation.innerHTML = `
+          <strong style="color: var(--accent-danger);">📍 ${url.errorDetails.location || 'Lokasi tidak diketahui'}</strong>
+        `;
+        
+        errorReason.innerHTML = `
+          ${url.errorDetails.reason || 'Alasan detail tidak tersedia'}
+        `;
+        
+        errorRecommendation.innerHTML = `
+          ${url.errorDetails.recommendation || 'Tidak ada rekomendasi khusus'}
+        `;
+        
+        // Show screenshot if available
+        if (url.screenshot) {
+          errorScreenshot.style.display = 'block';
+          screenshotImage.src = url.screenshot;
+          screenshotImage.alt = `Screenshot error - ${url.name || url.url}`;
+        } else {
+          errorScreenshot.style.display = 'none';
+        }
+        
+        return ''; // Return empty since we're using the detailed card
+      }
+      
+      // ✅ FALLBACK: If no errorDetails, use the old error list system
+      errorDetailsCard.style.display = 'none';
+      errorListCard.style.display = 'block';
+      
+      const errors = [];
+      
+      switch (url.status) {
+        case 'DOWN':
+          errors.push('Server tidak merespons atau website down');
+          errors.push('Kemungkinan server mati atau maintenance');
+          if (!url.httpStatus || url.httpStatus >= 500) {
+            errors.push('HTTP Status: Server Error (5xx)');
+          }
+          if (url.responseTime > 10000) {
+            errors.push('Response time sangat lambat (>10 detik)');
+          }
+          break;
+          
+        case 'TIMEOUT':
+          errors.push('Request timeout - Server terlalu lama merespons');
+          errors.push('Kemungkinan server overload atau koneksi lambat');
+          errors.push(`Response time: ${url.responseTime || 'N/A'}ms`);
+          break;
+          
+        case 'ERROR':
+          errors.push('Terjadi error saat mengakses website');
+          if (url.statusMessage) {
+            errors.push(`Detail: ${url.statusMessage}`);
+          }
+          if (url.httpStatus) {
+            errors.push(`HTTP Status: ${url.httpStatus}`);
+          }
+          break;
+          
+        case 'EMPTY':
+          errors.push('Halaman tidak memiliki konten atau kosong');
+          errors.push('Body HTML kosong atau tidak ada elemen visible');
+          errors.push('Kemungkinan halaman error atau redirect bermasalah');
+          break;
+          
+        case 'PARTIAL':
+          errors.push('Website bisa diakses tapi ada masalah partial');
+          errors.push('Beberapa resource gagal dimuat');
+          if (url.statusMessage) {
+            errors.push(`Detail: ${url.statusMessage}`);
+          }
+          break;
+          
+        case 'NOT_PLAYABLE':
+          errors.push('Konten video/media tidak bisa diputar');
+          errors.push('Player video gagal load atau error');
+          break;
+          
+        case 'IFRAME_FAILED':
+          errors.push('Iframe gagal dimuat dengan benar');
+          errors.push('Konten external tidak bisa ditampilkan');
+          break;
+          
+        case 'JS_ERROR':
+          errors.push('Terdapat JavaScript error di halaman');
+          errors.push('Aplikasi mungkin tidak berfungsi sempurna');
+          if (url.statusMessage) {
+            errors.push(`Error: ${url.statusMessage}`);
+          }
+          break;
+          
+        case 'NETWORK_ERROR':
+          errors.push('Kesalahan jaringan saat mengakses website');
+          errors.push('Koneksi terputus atau DNS error');
+          break;
+          
+        default:
+          errors.push('Status tidak dikenal atau error umum');
+          if (url.statusMessage) {
+            errors.push(`Detail: ${url.statusMessage}`);
+          }
+      }
+      
+      // Add general diagnostics
+      if (url.responseTime && url.responseTime > 5000) {
+        errors.push(`⚠️ Response time lambat: ${url.responseTime}ms`);
+      }
+      
+      if (url.httpStatus && url.httpStatus >= 400) {
+        errors.push(`⚠️ HTTP Error Code: ${url.httpStatus}`);
+      }
+      
+      return errors.map(error => `<li>${error}</li>`).join('');
+    }
+    
+    // Format bytes to human readable
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTheme();
+      connectWebSocket();
+      loadUrls();
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (event) => {
+      const modal = document.getElementById('addUrlModal');
+      if (event.target === modal) {
+        closeAddUrlModal();
+      }
+    });
+  </script>
+</body>
+</html>

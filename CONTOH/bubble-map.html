@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atom Map - Interactive Monitoring</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    :root {
+      /* Dark Theme */
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --bg-hover: #475569;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --shadow: rgba(0, 0, 0, 0.5);
+      --accent-primary: #3b82f6;
+      --accent-success: #10b981;
+      --accent-danger: #ef4444;
+      --accent-warning: #f59e0b;
+      --accent-info: #8b5cf6;
+      --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      --gradient-success: linear-gradient(135deg, #10b981, #059669);
+      --gradient-danger: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    [data-theme="light"] {
+      /* Light Theme */
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f1f5f9;
+      --bg-hover: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --shadow: rgba(0, 0, 0, 0.08);
+      --accent-primary: #2563eb;
+      --accent-success: #059669;
+      --accent-danger: #dc2626;
+      --accent-warning: #d97706;
+      --accent-info: #7c3aed;
+      --gradient-primary: linear-gradient(135deg, #2563eb, #7c3aed);
+      --gradient-success: linear-gradient(135deg, #059669, #047857);
+      --gradient-danger: linear-gradient(135deg, #dc2626, #b91c1c);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      transition: background 0.3s ease, color 0.3s ease;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      background: var(--bg-secondary);
+      padding: 20px 32px;
+      border-bottom: 2px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 100;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-primary);
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--gradient-primary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .header-content h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .header-subtitle {
+      color: var(--text-secondary);
+      font-size: 0.813rem;
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 4px var(--shadow);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow);
+    }
+
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .theme-toggle {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.25rem;
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg-hover);
+      transform: translateY(-2px);
+    }
+
+    .connection-badge {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 2px solid var(--border-color);
+    }
+
+    .connection-badge.connected {
+      background: color-mix(in srgb, var(--accent-success) 10%, transparent);
+      color: var(--accent-success);
+      border-color: var(--accent-success);
+    }
+
+    .connection-badge.disconnected {
+      background: color-mix(in srgb, var(--accent-danger) 10%, transparent);
+      color: var(--accent-danger);
+      border-color: var(--accent-danger);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+      }
+    }
+
+    /* Main Container */
+    .main-container {
+      display: flex;
+      height: calc(100vh - 88px);
+      position: relative;
+    }
+
+    /* Atom Container */
+    .Atom-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-primary);
+    }
+
+    #Atom-chart {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Legend */
+    .legend {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 12px var(--shadow);
+      z-index: 10;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      min-width: 240px;
+    }
+
+    .legend.open {
+      max-height: 500px;
+      opacity: 1;
+      padding: 16px;
+    }
+
+    .legend-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 0.813rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .legend-Atom {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .legend-divider {
+      margin: 12px 0;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    /* Stats Panel */
+    .stats-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 12px var(--shadow);
+      z-index: 10;
+      min-width: 200px;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .stats-panel.open {
+      max-height: 500px;
+      opacity: 1;
+      padding: 16px;
+    }
+
+    .stats-panel-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.813rem;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+    }
+
+    .stat-value {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* Filter Panel */
+    .filter-panel {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 12px var(--shadow);
+      z-index: 10;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .filter-panel.open {
+      max-height: 500px;
+      opacity: 1;
+      padding: 16px;
+    }
+
+    .filter-label {
+      font-size: 0.813rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .filter-btn {
+      padding: 8px 14px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    .filter-btn.active {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+    }
+
+    /* Icon Buttons */
+    .icon-buttons {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 20;
+    }
+
+    .icon-buttons.top-left {
+      top: 20px;
+      left: 20px;
+    }
+
+    .icon-buttons.top-right {
+      top: 20px;
+      right: 20px;
+    }
+
+    .icon-buttons.bottom-left {
+      bottom: 20px;
+      left: 20px;
+    }
+
+    .icon-btn {
+      width: 48px;
+      height: 48px;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px var(--shadow);
+      position: relative;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .icon-btn.active {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+
+    .icon-btn svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--text-secondary);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.3s ease;
+    }
+
+    .icon-btn:hover svg,
+    .icon-btn.active svg {
+      stroke: var(--accent-primary);
+    }
+
+    .icon-btn.active svg {
+      stroke: white;
+    }
+
+    /* Tooltip for icons */
+    .icon-tooltip {
+      position: absolute;
+      left: 60px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      box-shadow: 0 2px 8px var(--shadow);
+      z-index: 100;
+    }
+
+    .icon-btn:hover .icon-tooltip {
+      opacity: 1;
+    }
+
+    /* Side Panel */
+    .side-panel {
+      position: absolute;
+      right: -420px;
+      top: 0;
+      bottom: 0;
+      width: 420px;
+      background: var(--bg-secondary);
+      border-left: 2px solid var(--border-color);
+      box-shadow: -4px 0 12px var(--shadow);
+      transition: right 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .side-panel.open {
+      right: 0;
+    }
+
+    .side-panel-header {
+      background: var(--bg-tertiary);
+      padding: 24px;
+      border-bottom: 2px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .side-panel-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .close-btn {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: var(--text-secondary);
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+
+    .close-btn:hover {
+      background: var(--accent-danger);
+      color: white;
+      border-color: var(--accent-danger);
+      transform: rotate(90deg);
+    }
+
+    .side-panel-body {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .detail-section {
+      margin-bottom: 24px;
+    }
+
+    .detail-section-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .detail-item {
+      background: var(--bg-tertiary);
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 8px;
+    }
+
+    .detail-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      font-size: 0.938rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      word-break: break-word;
+    }
+
+    .status-badge {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-UP {
+      background: color-mix(in srgb, var(--accent-success) 20%, transparent);
+      color: var(--accent-success);
+      border: 1px solid var(--accent-success);
+    }
+
+    .status-DOWN {
+      background: color-mix(in srgb, var(--accent-danger) 20%, transparent);
+      color: var(--accent-danger);
+      border: 1px solid var(--accent-danger);
+    }
+
+    .status-TIMEOUT {
+      background: color-mix(in srgb, var(--accent-warning) 20%, transparent);
+      color: var(--accent-warning);
+      border: 1px solid var(--accent-warning);
+    }
+
+    .status-UNKNOWN {
+      background: color-mix(in srgb, var(--text-muted) 20%, transparent);
+      color: var(--text-muted);
+      border: 1px solid var(--text-muted);
+    }
+
+    /* Tooltip */
+    .Atom-tooltip {
+      position: absolute;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 0.813rem;
+      color: var(--text-primary);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 1000;
+      box-shadow: 0 8px 24px var(--shadow);
+      max-width: 280px;
+    }
+
+    .Atom-tooltip.visible {
+      opacity: 1;
+    }
+
+    .tooltip-name {
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+      font-size: 0.938rem;
+    }
+
+    .tooltip-status {
+      font-size: 0.75rem;
+      margin-bottom: 6px;
+    }
+
+    .tooltip-info {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .tooltip-url {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      word-break: break-all;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    /* Loading */
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      z-index: 1000;
+    }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid var(--border-color);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .side-panel {
+        width: 100%;
+        right: -100%;
+      }
+
+      .legend,
+      .stats-panel,
+      .filter-panel {
+        font-size: 0.75rem;
+        padding: 12px;
+      }
+
+      .header-actions {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <div class="header-icon">🫧</div>
+      <div>
+        <h1>Atom Map - Interactive Monitoring</h1>
+        <p class="header-subtitle">Visualisasi monitoring real-time dengan Atom chart interaktif</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div id="connectionStatus" class="connection-badge disconnected">
+        <span class="status-dot"></span>
+        Terputus
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</button>
+      <button class="btn btn-secondary" onclick="window.location.href='/'">
+        ← Dashboard
+      </button>
+      <button class="btn btn-secondary" onclick="window.location.href='/tree-map.html'">
+        🌳 Tree Map
+      </button>
+      <button class="btn btn-primary" onclick="loadData()">
+        🔄 Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Memuat Atom chart...</div>
+    </div>
+
+    <!-- Atom Container -->
+    <div class="Atom-container">
+      <svg id="Atom-chart"></svg>
+
+      <!-- Icon Buttons - Top Left -->
+      <div class="icon-buttons top-left">
+        <div class="icon-btn" onclick="toggleLegend()" id="legendBtn">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <line x1="14" y1="6.5" x2="21" y2="6.5" />
+            <line x1="14" y1="17.5" x2="21" y2="17.5" />
+          </svg>
+          <div class="icon-tooltip">Legend</div>
+        </div>
+      </div>
+
+      <!-- Icon Buttons - Top Right -->
+      <div class="icon-buttons top-right">
+        <div class="icon-btn" onclick="toggleFullscreen()" id="fullscreenBtn">
+          <svg viewBox="0 0 24 24" id="fullscreenIcon">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+          </svg>
+          <div class="icon-tooltip" style="left: auto; right: 60px;">Fullscreen</div>
+        </div>
+        <div class="icon-btn" onclick="toggleStats()" id="statsBtn">
+          <svg viewBox="0 0 24 24">
+            <line x1="12" y1="20" x2="12" y2="10" />
+            <line x1="18" y1="20" x2="18" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="16" />
+          </svg>
+          <div class="icon-tooltip" style="left: auto; right: 60px;">Statistics</div>
+        </div>
+      </div>
+
+      <!-- Icon Buttons - Bottom Left -->
+      <div class="icon-buttons bottom-left">
+        <div class="icon-btn" onclick="toggleFilter()" id="filterBtn">
+          <svg viewBox="0 0 24 24">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
+          <div class="icon-tooltip">Filter</div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend" id="legendPanel" style="top: 80px;">
+        <div class="legend-title">Status Colors</div>
+        <div class="legend-item">
+          <div class="legend-Atom" style="background: #10b981;"></div>
+          <span>UP - Online</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-Atom" style="background: #ef4444;"></div>
+          <span>DOWN - Offline</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-Atom" style="background: #f59e0b;"></div>
+          <span>TIMEOUT - Slow</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-Atom" style="background: #94a3b8;"></div>
+          <span>UNKNOWN - Not Checked</span>
+        </div>
+
+        <div class="legend-divider"></div>
+
+        <div class="legend-title" style="margin-top: 12px;">Atom Size</div>
+        <div class="legend-item">
+          <span style="font-size: 0.75rem; color: var(--text-muted);">
+            Size = Response Time<br>
+            (Larger = Slower)
+          </span>
+        </div>
+      </div>
+
+      <!-- Stats Panel -->
+      <div class="stats-panel" id="statsPanel" style="top: 80px;">
+        <div class="stats-panel-title">Statistics</div>
+        <div class="stat-item">
+          <span class="stat-label">Total URLs:</span>
+          <span class="stat-value" id="totalUrls">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Online:</span>
+          <span class="stat-value" style="color: var(--accent-success);" id="onlineUrls">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Offline:</span>
+          <span class="stat-value" style="color: var(--accent-danger);" id="offlineUrls">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Issues:</span>
+          <span class="stat-value" style="color: var(--accent-warning);" id="issueUrls">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Avg Response:</span>
+          <span class="stat-value" id="avgResponse">0ms</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Last Update:</span>
+          <span class="stat-value" style="font-size: 0.7rem; color: var(--text-muted);" id="lastUpdate">-</span>
+        </div>
+      </div>
+
+      <!-- Filter Panel -->
+      <div class="filter-panel" id="filterPanel" style="bottom: 80px;">
+        <span class="filter-label">Filter:</span>
+        <button class="filter-btn active" onclick="filterAtoms('all')">All</button>
+        <button class="filter-btn" onclick="filterAtoms('UP')">UP</button>
+        <button class="filter-btn" onclick="filterAtoms('DOWN')">DOWN</button>
+        <button class="filter-btn" onclick="filterAtoms('TIMEOUT')">SLOW</button>
+      </div>
+
+      <!-- Tooltip -->
+      <div class="Atom-tooltip" id="AtomTooltip"></div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="side-panel" id="sidePanel">
+      <div class="side-panel-header">
+        <div class="side-panel-title" id="sidePanelTitle">Atom Details</div>
+        <div class="close-btn" onclick="closeSidePanel()">×</div>
+      </div>
+      <div class="side-panel-body" id="sidePanelBody">
+        <p style="color: var(--text-muted); text-align: center; padding: 40px;">
+          Klik Atom untuk melihat detail lengkap
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    const CONFIG = {
+      minRadius: 25,
+      maxRadius: 80,
+      padding: 3,
+      forceStrength: 0.05
+    };
+
+    // Color mapping based on status
+    const STATUS_COLORS = {
+      'UP': '#10b981',
+      'DOWN': '#ef4444',
+      'TIMEOUT': '#f59e0b',
+      'ERROR': '#ef4444',
+      'PARTIAL': '#f59e0b',
+      'EMPTY': '#ef4444',
+      'NOT_PLAYABLE': '#f59e0b',
+      'IFRAME_FAILED': '#f59e0b',
+      'JS_ERROR': '#f59e0b',
+      'NETWORK_ERROR': '#ef4444',
+      'UNKNOWN': '#94a3b8'
+    };
+
+    // Status icons
+    const STATUS_ICONS = {
+      'UP': '✓',
+      'DOWN': '✕',
+      'TIMEOUT': '⏱',
+      'ERROR': '⚠',
+      'PARTIAL': '⚠',
+      'UNKNOWN': '?'
+    };
+
+    // Global variables
+    let ws = null;
+    let simulation = null;
+    let svg = null;
+    let g = null;
+    let currentData = [];
+    let selectedAtom = null;
+    let currentFilter = 'all';
+    let isDarkTheme = true;
+
+    // WebSocket Connection
+    function connectWebSocket() {
+      ws = new WebSocket(`ws://${window.location.host}`);
+
+      ws.onopen = () => {
+        updateConnectionStatus(true);
+        console.log('✅ WebSocket connected');
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('📨 WebSocket message:', data);
+
+        if (data.type === 'monitoring_update' && data.data) {
+          updateAtomStatus(data.data);
+        } else if (data.type === 'update') {
+          loadData();
+        }
+      };
+
+      ws.onclose = () => {
+        updateConnectionStatus(false);
+        setTimeout(connectWebSocket, 3000);
+      };
+
+      ws.onerror = () => {
+        updateConnectionStatus(false);
+      };
+    }
+
+    function updateConnectionStatus(connected) {
+      const statusEl = document.getElementById('connectionStatus');
+      if (connected) {
+        statusEl.className = 'connection-badge connected';
+        statusEl.innerHTML = '<span class="status-dot"></span>Terhubung';
+      } else {
+        statusEl.className = 'connection-badge disconnected';
+        statusEl.innerHTML = '<span class="status-dot"></span>Terputus';
+      }
+    }
+
+    // Theme Toggle
+    function toggleTheme() {
+      isDarkTheme = !isDarkTheme;
+      const html = document.documentElement;
+      const toggle = document.getElementById('themeToggle');
+
+      if (isDarkTheme) {
+        html.removeAttribute('data-theme');
+        toggle.textContent = '🌙';
+      } else {
+        html.setAttribute('data-theme', 'light');
+        toggle.textContent = '☀️';
+      }
+
+      // Redraw Atoms with new theme colors
+      if (currentData.length > 0) {
+        updateAtoms(currentData);
+      }
+    }
+
+    // Initialize Atom Chart
+    function initAtomChart() {
+      const container = document.getElementById('Atom-chart');
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      // Create SVG
+      svg = d3.select('#Atom-chart')
+        .attr('width', width)
+        .attr('height', height);
+
+      // Create main group
+      g = svg.append('g');
+
+      // Create force simulation
+      simulation = d3.forceSimulation()
+        .force('charge', d3.forceManyBody().strength(5))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('collision', d3.forceCollide().radius(d => d.radius + CONFIG.padding))
+        .force('x', d3.forceX(width / 2).strength(CONFIG.forceStrength))
+        .force('y', d3.forceY(height / 2).strength(CONFIG.forceStrength));
+    }
+
+    // Load data from API
+    async function loadData() {
+      try {
+        const response = await fetch('/api/urls');
+        const result = await response.json();
+        const urls = result.data || result;
+
+        // Transform data
+        const AtomData = transformToAtomData(urls);
+        currentData = AtomData;
+
+        // Update Atoms
+        updateAtoms(AtomData);
+
+        // Update stats
+        updateStats(urls);
+
+        // Hide loading
+        document.getElementById('loadingOverlay').style.display = 'none';
+
+        console.log('✅ Data loaded:', AtomData);
+      } catch (error) {
+        console.error('❌ Error loading data:', error);
+      }
+    }
+
+    // Transform URLs to Atom data
+    function transformToAtomData(urls) {
+      // Calculate radius based on response time
+      const responseTimes = urls.map(u => u.responseTime || 1000).filter(rt => rt > 0);
+      const minResponseTime = Math.min(...responseTimes, 100);
+      const maxResponseTime = Math.max(...responseTimes, 5000);
+
+      const radiusScale = d3.scaleLinear()
+        .domain([minResponseTime, maxResponseTime])
+        .range([CONFIG.minRadius, CONFIG.maxRadius]);
+
+      return urls.map(url => ({
+        id: url._id,
+        name: url.name || url.url,
+        url: url.url,
+        status: url.status || 'UNKNOWN',
+        responseTime: url.responseTime || 0,
+        lastChecked: url.lastChecked,
+        httpStatus: url.httpStatus,
+        statusMessage: url.statusMessage,
+        description: url.description,
+        requiresAuth: url.requiresAuth,
+        radius: radiusScale(url.responseTime || 1000),
+        color: STATUS_COLORS[url.status] || STATUS_COLORS['UNKNOWN']
+      }));
+    }
+
+    // Update Atoms visualization
+    function updateAtoms(data) {
+      // Filter data if needed
+      let filteredData = data;
+      if (currentFilter !== 'all') {
+        filteredData = data.filter(d => d.status === currentFilter);
+      }
+
+      // Clear existing
+      g.selectAll('*').remove();
+
+      // Create Atom groups
+      const Atoms = g.selectAll('.Atom')
+        .data(filteredData, d => d.id)
+        .join('g')
+        .attr('class', 'Atom')
+        .style('cursor', 'pointer')
+        .call(d3.drag()
+          .on('start', dragstarted)
+          .on('drag', dragged)
+          .on('end', dragended));
+
+      // Add main circle
+      Atoms.append('circle')
+        .attr('r', d => d.radius)
+        .attr('fill', d => d.color)
+        .attr('stroke', 'var(--bg-primary)')
+        .attr('stroke-width', 3)
+        .style('transition', 'all 0.3s ease')
+        .style('filter', 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2))');
+
+      // Add pulse animation for errors
+      Atoms.filter(d => d.status === 'DOWN' || d.status === 'ERROR')
+        .append('circle')
+        .attr('r', d => d.radius)
+        .attr('fill', 'none')
+        .attr('stroke', '#ef4444')
+        .attr('stroke-width', 2)
+        .attr('opacity', 1)
+        .transition()
+        .duration(1500)
+        .ease(d3.easeLinear)
+        .attr('r', d => d.radius + 20)
+        .attr('opacity', 0)
+        .on('end', function repeat() {
+          d3.select(this)
+            .attr('r', d => d.radius)
+            .attr('opacity', 1)
+            .transition()
+            .duration(1500)
+            .ease(d3.easeLinear)
+            .attr('r', d => d.radius + 20)
+            .attr('opacity', 0)
+            .on('end', repeat);
+        });
+
+      // Add status icon
+      Atoms.append('text')
+        .text(d => STATUS_ICONS[d.status] || '?')
+        .attr('text-anchor', 'middle')
+        .attr('dy', -5)
+        .style('font-size', d => `${d.radius * 0.6}px`)
+        .style('font-weight', '800')
+        .style('fill', 'white')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+        .style('text-shadow', '0 2px 4px rgba(0, 0, 0, 0.3)');
+
+      // Add response time label
+      Atoms.append('text')
+        .text(d => d.responseTime ? `${d.responseTime}ms` : 'N/A')
+        .attr('text-anchor', 'middle')
+        .attr('dy', 12)
+        .style('font-size', d => `${d.radius * 0.25}px`)
+        .style('font-weight', '700')
+        .style('fill', 'white')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+        .style('text-shadow', '0 2px 4px rgba(0, 0, 0, 0.3)');
+
+      // Add name label below Atom
+      Atoms.append('text')
+        .text(d => {
+          const maxLength = Math.floor(d.radius / 4);
+          return d.name.length > maxLength ? d.name.substring(0, maxLength) + '...' : d.name;
+        })
+        .attr('text-anchor', 'middle')
+        .attr('dy', d => d.radius + 18)
+        .style('font-size', '0.75rem')
+        .style('font-weight', '600')
+        .style('fill', 'var(--text-secondary)')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none');
+
+      // Add event listeners
+      Atoms.on('click', (event, d) => {
+        hideTooltip(); // ✅ Hide tooltip when showing modal
+        showAtomDetails(d);
+      })
+        .on('mouseover', (event, d) => {
+          showTooltip(event, d);
+          d3.select(event.currentTarget).select('circle')
+            .transition()
+            .duration(200)
+            .attr('r', d => d.radius * 1.1)
+            .style('filter', 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3))');
+        })
+        .on('mouseout', (event, d) => {
+          hideTooltip(); // ✅ Ensure tooltip disappears
+          d3.select(event.currentTarget).select('circle')
+            .transition()
+            .duration(200)
+            .attr('r', d => d.radius)
+            .style('filter', 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2))');
+        });
+
+      // Update simulation
+      simulation.nodes(filteredData).on('tick', () => {
+        Atoms.attr('transform', d => `translate(${d.x},${d.y})`);
+      });
+
+      simulation.alpha(1).restart();
+    }
+
+    // Update single Atom status
+    function updateAtomStatus(data) {
+      const AtomId = data.urlId || data._id;
+      const Atom = currentData.find(b => b.id === AtomId);
+
+      if (Atom) {
+        // Update Atom data
+        Atom.status = data.status;
+        Atom.responseTime = data.responseTime;
+        Atom.lastChecked = new Date();
+        Atom.httpStatus = data.httpStatus;
+        Atom.statusMessage = data.statusMessage;
+        Atom.color = STATUS_COLORS[data.status] || STATUS_COLORS['UNKNOWN'];
+
+        // Calculate new radius
+        const responseTimes = currentData.map(b => b.responseTime || 1000).filter(rt => rt > 0);
+        const minResponseTime = Math.min(...responseTimes, 100);
+        const maxResponseTime = Math.max(...responseTimes, 5000);
+
+        const radiusScale = d3.scaleLinear()
+          .domain([minResponseTime, maxResponseTime])
+          .range([CONFIG.minRadius, CONFIG.maxRadius]);
+
+        Atom.radius = radiusScale(data.responseTime || 1000);
+
+        // Update visual
+        const AtomElement = d3.select('.Atom')
+          .filter(d => d.id === AtomId);
+
+        AtomElement.select('circle')
+          .transition()
+          .duration(500)
+          .attr('fill', Atom.color)
+          .attr('r', Atom.radius);
+
+        AtomElement.select('text')
+          .text(STATUS_ICONS[data.status] || '?');
+
+        // Update stats
+        updateStatsFromCurrentData();
+
+        // If side panel is open for this Atom, update it
+        if (selectedAtom && selectedAtom.id === AtomId) {
+          showAtomDetails(Atom);
+        }
+
+        console.log('✅ Atom updated:', AtomId, data.status);
+      }
+    }
+
+    // Drag functions
+    function dragstarted(event, d) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+
+    function dragged(event, d) {
+      d.fx = event.x;
+      d.fy = event.y;
+    }
+
+    function dragended(event, d) {
+      if (!event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+
+    // Tooltip
+    function showTooltip(event, d) {
+      const tooltip = document.getElementById('AtomTooltip');
+      tooltip.innerHTML = `
+        <div class="tooltip-name">${d.name}</div>
+        <div class="tooltip-status">
+          <span class="status-badge status-${d.status}">${d.status}</span>
+        </div>
+        <div class="tooltip-info">
+          ⚡ Response: <strong>${d.responseTime ? d.responseTime + 'ms' : 'N/A'}</strong>
+        </div>
+        ${d.httpStatus ? `<div class="tooltip-info">📡 HTTP: <strong>${d.httpStatus}</strong></div>` : ''}
+        <div class="tooltip-url">${d.url}</div>
+      `;
+      tooltip.style.left = (event.pageX + 15) + 'px';
+      tooltip.style.top = (event.pageY + 15) + 'px';
+      tooltip.classList.add('visible');
+    }
+
+    function hideTooltip() {
+      const tooltip = document.getElementById('AtomTooltip');
+      tooltip.classList.remove('visible');
+    }
+
+    // Side Panel
+    function showAtomDetails(Atom) {
+      selectedAtom = Atom;
+      const panel = document.getElementById('sidePanel');
+      const title = document.getElementById('sidePanelTitle');
+      const body = document.getElementById('sidePanelBody');
+
+      title.textContent = Atom.name;
+
+      body.innerHTML = `
+        <div class="detail-section">
+          <div class="detail-section-title">📊 Status Overview</div>
+          <div class="detail-item">
+            <div class="detail-label">Current Status</div>
+            <div class="detail-value">
+              <span class="status-badge status-${Atom.status}">${Atom.status}</span>
+            </div>
+          </div>
+          ${Atom.statusMessage ? `
+          <div class="detail-item">
+            <div class="detail-label">Status Message</div>
+            <div class="detail-value">${Atom.statusMessage}</div>
+          </div>
+          ` : ''}
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-title">🔗 URL Information</div>
+          <div class="detail-item">
+            <div class="detail-label">Full URL</div>
+            <div class="detail-value" style="font-size: 0.813rem; word-break: break-all;">${Atom.url}</div>
+          </div>
+          ${Atom.description ? `
+          <div class="detail-item">
+            <div class="detail-label">Description</div>
+            <div class="detail-value">${Atom.description}</div>
+          </div>
+          ` : ''}
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-title">⚡ Performance Metrics</div>
+          <div class="detail-item">
+            <div class="detail-label">Response Time</div>
+            <div class="detail-value" style="font-size: 1.5rem; color: ${Atom.responseTime > 3000 ? 'var(--accent-danger)' : Atom.responseTime > 1000 ? 'var(--accent-warning)' : 'var(--accent-success)'};">
+              ${Atom.responseTime ? Atom.responseTime + 'ms' : 'N/A'}
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">HTTP Status Code</div>
+            <div class="detail-value">${Atom.httpStatus || 'N/A'}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Last Checked</div>
+            <div class="detail-value" style="font-size: 0.813rem;">
+              ${Atom.lastChecked ? new Date(Atom.lastChecked).toLocaleString('id-ID', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      }) : 'Never'}
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Atom Size (Radius)</div>
+            <div class="detail-value">${Math.round(Atom.radius)}px</div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-title">🔒 Security</div>
+          <div class="detail-item">
+            <div class="detail-label">Requires Authentication</div>
+            <div class="detail-value">${Atom.requiresAuth ? '✓ Yes' : '✕ No'}</div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-title">🎨 Visual Info</div>
+          <div class="detail-item">
+            <div class="detail-label">Atom Color</div>
+            <div class="detail-value">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 24px; height: 24px; border-radius: 50%; background: ${Atom.color}; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"></div>
+                <span>${Atom.color}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; display: flex; gap: 12px;">
+          <button class="btn btn-primary" style="flex: 1;" onclick="recheckAtom('${Atom.id}')">
+            🔄 Check Now
+          </button>
+          <button class="btn btn-secondary" style="flex: 1;" onclick="focusAtom('${Atom.id}')">
+            🎯 Focus
+          </button>
+        </div>
+      `;
+
+      panel.classList.add('open');
+    }
+
+    function closeSidePanel() {
+      const panel = document.getElementById('sidePanel');
+      panel.classList.remove('open');
+      selectedAtom = null;
+    }
+
+    // Recheck Atom
+    async function recheckAtom(AtomId) {
+      try {
+        const response = await fetch(`/api/urls/${AtomId}/check`, { method: 'POST' });
+        if (response.ok) {
+          console.log('✅ Atom rechecked:', AtomId);
+        }
+      } catch (error) {
+        console.error('❌ Error rechecking Atom:', error);
+      }
+    }
+
+    // Focus on specific Atom
+    function focusAtom(AtomId) {
+      const Atom = currentData.find(b => b.id === AtomId);
+      if (Atom && Atom.x && Atom.y) {
+        // Highlight the Atom
+        d3.selectAll('.Atom')
+          .style('opacity', d => d.id === AtomId ? 1 : 0.3)
+          .transition()
+          .duration(1000)
+          .style('opacity', 1);
+
+        // Pulse effect
+        d3.selectAll('.Atom')
+          .filter(d => d.id === AtomId)
+          .select('circle')
+          .transition()
+          .duration(300)
+          .attr('r', d => d.radius * 1.3)
+          .transition()
+          .duration(300)
+          .attr('r', d => d.radius);
+      }
+    }
+
+    // Toggle panel functions
+    function toggleLegend() {
+      const panel = document.getElementById('legendPanel');
+      const btn = document.getElementById('legendBtn');
+      panel.classList.toggle('open');
+      btn.classList.toggle('active');
+    }
+
+    function toggleStats() {
+      const panel = document.getElementById('statsPanel');
+      const btn = document.getElementById('statsBtn');
+      panel.classList.toggle('open');
+      btn.classList.toggle('active');
+    }
+
+    function toggleFilter() {
+      const panel = document.getElementById('filterPanel');
+      const btn = document.getElementById('filterBtn');
+      panel.classList.toggle('open');
+      btn.classList.toggle('active');
+    }
+
+    // Fullscreen toggle
+    function toggleFullscreen() {
+      const btn = document.getElementById('fullscreenBtn');
+      const icon = document.getElementById('fullscreenIcon');
+
+      if (!document.fullscreenElement) {
+        // Enter fullscreen
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+          document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
+          document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+          document.documentElement.msRequestFullscreen();
+        }
+        btn.classList.add('active');
+        // Change icon to exit fullscreen
+        icon.innerHTML = '<path d="M3 8V5a2 2 0 0 1 2-2h3m10 0h3a2 2 0 0 1 2 2v3m0 10v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/>';
+      } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) { // Firefox
+          document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { // IE/Edge
+          document.msExitFullscreen();
+        }
+        btn.classList.remove('active');
+        // Change icon back to enter fullscreen
+        icon.innerHTML = '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>';
+      }
+    }
+
+    // Listen for fullscreen changes (e.g., ESC key)
+    document.addEventListener('fullscreenchange', () => {
+      const btn = document.getElementById('fullscreenBtn');
+      const icon = document.getElementById('fullscreenIcon');
+
+      if (!document.fullscreenElement) {
+        btn.classList.remove('active');
+        icon.innerHTML = '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>';
+      }
+    });
+
+    // Filter Atoms
+    function filterAtoms(filter) {
+      currentFilter = filter;
+
+      // Update button states
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      // Re-render Atoms
+      updateAtoms(currentData);
+    }
+
+    // Update stats
+    function updateStats(urls) {
+      document.getElementById('totalUrls').textContent = urls.length;
+      document.getElementById('onlineUrls').textContent = urls.filter(u => u.status === 'UP').length;
+      document.getElementById('offlineUrls').textContent = urls.filter(u => u.status === 'DOWN' || u.status === 'ERROR').length;
+      document.getElementById('issueUrls').textContent = urls.filter(u => u.status !== 'UP' && u.status !== 'UNKNOWN').length;
+
+      const responseTimes = urls.filter(u => u.responseTime > 0).map(u => u.responseTime);
+      const avgResponse = responseTimes.length > 0
+        ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
+        : 0;
+      document.getElementById('avgResponse').textContent = avgResponse + 'ms';
+
+      document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('id-ID');
+    }
+
+    function updateStatsFromCurrentData() {
+      const urls = currentData;
+      updateStats(urls);
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      initAtomChart();
+      connectWebSocket();
+      loadData();
+
+      // Auto refresh every 30 seconds
+      setInterval(loadData, 30000);
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      const container = document.getElementById('Atom-chart');
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      svg.attr('width', width).attr('height', height);
+
+      simulation
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('x', d3.forceX(width / 2).strength(CONFIG.forceStrength))
+        .force('y', d3.forceY(height / 2).strength(CONFIG.forceStrength))
+        .alpha(0.3)
+        .restart();
+    });
+  </script>
+</body>
+
+</html>

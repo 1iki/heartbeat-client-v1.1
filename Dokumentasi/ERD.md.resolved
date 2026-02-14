@@ -1,0 +1,90 @@
+# Entity Relationship Diagram (ERD)
+
+Based on the Mongoose schema analysis ([lib/db/models/Node.ts](file:///c:/Erlangga/Monitoring/v2-reactjs1/v2-reactjs/lib/db/models/Node.ts)), the project uses a **MongoDB** database with a single primary collection: **nodes**.
+
+## Diagram
+
+```mermaid
+erDiagram
+    NODE {
+        ObjectId _id PK
+        string name "Unique, Indexed"
+        string url "Validated URL"
+        string group "Enum: website, api, etc."
+        string status "Enum: STABLE, DOWN, etc."
+        number latency "Current latency (ms)"
+        number[] history "Last 20 latency measurements"
+        Date lastChecked "Indexed"
+        number httpStatus
+        string statusMessage
+        Date createdAt
+        Date updatedAt
+    }
+
+    AUTH_CONFIG {
+        string type "NONE, BASIC, BEARER, etc."
+        string username
+        string password
+        string token
+        string headerName
+        string headerValue
+        string loginUrl
+        string loginType
+    }
+
+    %% Relationships
+    NODE ||--o{ NODE : "dependencies (Self-Reference)"
+    NODE ||--|| AUTH_CONFIG : "embeds"
+
+```
+```
+Table NODE {
+  _id ObjectId [pk]
+  name string
+  url string
+  group string
+  status string
+  latency int
+  history json
+  lastChecked datetime
+  httpStatus int
+  statusMessage string
+  createdAt datetime
+  updatedAt datetime
+
+  parentId ObjectId [ref: > NODE._id]   // self reference
+  authConfigId ObjectId [ref: > AUTH_CONFIG._id]
+}
+
+Table AUTH_CONFIG {
+  _id ObjectId [pk]
+  type string
+  username string
+  password string
+  token string
+  headerName string
+  headerValue string
+  loginUrl string
+  loginType string
+}
+```
+## Description
+
+### 1. **Node** (Koleksi: `nodes`)
+Entitas pusat yang mewakili layanan atau titik akhir yang dipantau.
+
+- **Kunci Utama**: `_id` (MongoDB ObjectId).
+
+- **Informasi Inti**: `name`, `url`, `group`.
+
+- **Pelacakan Status**: `status`, `latency`, `lastChecked`, `httpStatus`, `statusMessage`.
+
+- **Riwayat**: `history` (Array angka) menyimpan 20 pemeriksaan latensi terakhir langsung di dalam dokumen.
+
+- **Relasi**:
+- **Referensi Diri**: Bidang `dependencies` adalah array ObjectId yang merujuk pada dokumentasi [Node](file:///c:/Erlangga/Monitoring/v2-reactjs1/v2-reactjs/types/index.ts#56-72) lainnya. Ini memungkinkan pemodelan grafik ketergantungan yang kompleks (misalnya, Layanan A bergantung pada Layanan B).
+
+### 2. **AuthConfig** (Objek Tertanam)
+Konfigurasi untuk pemeriksaan kesehatan terautentikasi. Disimpan langsung di dalam dokumen [Node](file:///c:/Erlangga/Monitoring/v2-reactjs1/v2-reactjs/types/index.ts#56-72).
+
+- **Tipe**: Otentikasi Dasar, Token Bearer, Kunci API, atau Otomatisasi Browser (Puppeteer/Playwright).

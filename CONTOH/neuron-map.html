@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neuron Mapping - Neural Network Visualization</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    :root {
+      /* Dark Theme */
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --bg-hover: #475569;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --shadow: rgba(0, 0, 0, 0.5);
+      --accent-primary: #3b82f6;
+      --accent-success: #10b981;
+      --accent-danger: #ef4444;
+      --accent-warning: #f59e0b;
+      --accent-info: #8b5cf6;
+      --accent-cyan: #06b6d4;
+      --accent-pink: #ec4899;
+      --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      --gradient-success: linear-gradient(135deg, #10b981, #059669);
+      --gradient-danger: linear-gradient(135deg, #ef4444, #dc2626);
+      --gradient-neural: linear-gradient(135deg, #8b5cf6, #ec4899);
+    }
+
+    [data-theme="light"] {
+      /* Light Theme */
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f1f5f9;
+      --bg-hover: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --shadow: rgba(0, 0, 0, 0.08);
+      --accent-primary: #2563eb;
+      --accent-success: #059669;
+      --accent-danger: #dc2626;
+      --accent-warning: #d97706;
+      --accent-info: #7c3aed;
+      --accent-cyan: #0891b2;
+      --accent-pink: #db2777;
+      --gradient-primary: linear-gradient(135deg, #2563eb, #7c3aed);
+      --gradient-success: linear-gradient(135deg, #059669, #047857);
+      --gradient-danger: linear-gradient(135deg, #dc2626, #b91c1c);
+      --gradient-neural: linear-gradient(135deg, #7c3aed, #db2777);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      transition: background 0.3s ease, color 0.3s ease;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      background: var(--bg-secondary);
+      padding: 20px 32px;
+      border-bottom: 2px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 100;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-neural);
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--gradient-neural);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+      animation: pulse-icon 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-icon {
+
+      0%,
+      100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+      }
+
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5);
+      }
+    }
+
+    .header-content h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .header-subtitle {
+      color: var(--text-secondary);
+      font-size: 0.813rem;
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 4px var(--shadow);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow);
+    }
+
+    .btn-primary {
+      background: var(--gradient-neural);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .connection-badge {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 2px solid var(--border-color);
+    }
+
+    .connection-badge.connected {
+      background: color-mix(in srgb, var(--accent-success) 10%, transparent);
+      color: var(--accent-success);
+      border-color: var(--accent-success);
+    }
+
+    .connection-badge.disconnected {
+      background: color-mix(in srgb, var(--accent-danger) 10%, transparent);
+      color: var(--accent-danger);
+      border-color: var(--accent-danger);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.7;
+        transform: scale(1.2);
+      }
+    }
+
+    /* Main Container */
+    .main-container {
+      display: flex;
+      height: calc(100vh - 88px);
+      position: relative;
+    }
+
+    /* Neural Network Container */
+    .neural-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-primary);
+    }
+
+    #neural-network {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Animated Background Grid */
+    .neural-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        linear-gradient(rgba(139, 92, 246, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139, 92, 246, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      z-index: 0;
+      pointer-events: none;
+      animation: grid-flow 20s linear infinite;
+    }
+
+    @keyframes grid-flow {
+      0% {
+        transform: translate(0, 0);
+      }
+
+      100% {
+        transform: translate(50px, 50px);
+      }
+    }
+
+    /* Legend */
+    .legend {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 4px 12px var(--shadow);
+      z-index: 10;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      min-width: 260px;
+    }
+
+    .legend.open {
+      max-height: 600px;
+      opacity: 1;
+      padding: 16px;
+    }
+
+    .legend-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 0.813rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .legend-neuron {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .legend-divider {
+      margin: 12px 0;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    /* Stats Panel */
+    .stats-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 4px 12px var(--shadow);
+      z-index: 10;
+      min-width: 220px;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .stats-panel.open {
+      max-height: 600px;
+      opacity: 1;
+      padding: 16px;
+    }
+
+    .stats-panel-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.813rem;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+    }
+
+    .stat-value {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* Controls Panel */
+    .controls-panel {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 4px 12px var(--shadow);
+      z-index: 10;
+      display: flex;
+      gap: 12px;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .controls-panel.open {
+      max-height: 100px;
+      opacity: 1;
+      padding: 16px;
+    }
+
+    .control-btn {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.813rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .control-btn:hover {
+      background: var(--accent-info);
+      color: white;
+      border-color: var(--accent-info);
+      transform: translateY(-2px);
+    }
+
+    /* Icon Buttons */
+    .icon-buttons {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 20;
+    }
+
+    .icon-buttons.top-left {
+      top: 20px;
+      left: 20px;
+    }
+
+    .icon-buttons.top-right {
+      top: 20px;
+      right: 20px;
+    }
+
+    .icon-buttons.bottom-left {
+      bottom: 20px;
+      left: 20px;
+    }
+
+    .icon-btn {
+      width: 48px;
+      height: 48px;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px var(--shadow);
+      position: relative;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-info);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .icon-btn.active {
+      background: var(--accent-info);
+      border-color: var(--accent-info);
+    }
+
+    .icon-btn svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--text-secondary);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.3s ease;
+    }
+
+    .icon-btn:hover svg,
+    .icon-btn.active svg {
+      stroke: var(--accent-info);
+    }
+
+    .icon-btn.active svg {
+      stroke: white;
+    }
+
+    /* Tooltip for icons */
+    .icon-tooltip {
+      position: absolute;
+      left: 60px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      box-shadow: 0 2px 8px var(--shadow);
+      z-index: 100;
+    }
+
+    .icon-btn:hover .icon-tooltip {
+      opacity: 1;
+    }
+
+    /* Side Panel */
+    .side-panel {
+      position: absolute;
+      right: -420px;
+      top: 0;
+      bottom: 0;
+      width: 420px;
+      background: var(--bg-secondary);
+      border-left: 2px solid var(--border-color);
+      box-shadow: -4px 0 12px var(--shadow);
+      transition: right 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .side-panel.open {
+      right: 0;
+    }
+
+    .side-panel-header {
+      background: var(--bg-tertiary);
+      padding: 24px;
+      border-bottom: 2px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .side-panel-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .close-btn {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: var(--text-secondary);
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+
+    .close-btn:hover {
+      background: var(--accent-danger);
+      color: white;
+      border-color: var(--accent-danger);
+      transform: rotate(90deg);
+    }
+
+    .side-panel-body {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .detail-section {
+      margin-bottom: 24px;
+    }
+
+    .detail-section-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .detail-item {
+      background: var(--bg-tertiary);
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var (--border-color);
+      margin-bottom: 8px;
+    }
+
+    .detail-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      font-size: 0.938rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      word-break: break-word;
+    }
+
+    .status-badge {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-UP {
+      background: color-mix(in srgb, var(--accent-success) 20%, transparent);
+      color: var(--accent-success);
+      border: 1px solid var(--accent-success);
+    }
+
+    .status-DOWN {
+      background: color-mix(in srgb, var(--accent-danger) 20%, transparent);
+      color: var(--accent-danger);
+      border: 1px solid var(--accent-danger);
+    }
+
+    .status-TIMEOUT {
+      background: color-mix(in srgb, var(--accent-warning) 20%, transparent);
+      color: var(--accent-warning);
+      border: 1px solid var(--accent-warning);
+    }
+
+    .status-UNKNOWN {
+      background: color-mix(in srgb, var(--text-muted) 20%, transparent);
+      color: var(--text-muted);
+      border: 1px solid var(--text-muted);
+    }
+
+    /* Neuron Tooltip */
+    .neuron-tooltip {
+      position: absolute;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 0.813rem;
+      color: var(--text-primary);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 1000;
+      box-shadow: 0 8px 24px var(--shadow);
+      max-width: 280px;
+    }
+
+    .neuron-tooltip.visible {
+      opacity: 1;
+    }
+
+    .tooltip-name {
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+      font-size: 0.938rem;
+    }
+
+    .tooltip-layer {
+      font-size: 0.7rem;
+      color: var(--accent-info);
+      margin-bottom: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .tooltip-status {
+      font-size: 0.75rem;
+      margin-bottom: 6px;
+    }
+
+    .tooltip-info {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Loading */
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      z-index: 1000;
+    }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid var(--border-color);
+      border-top-color: var(--accent-info);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    /* Synapse (connection) animation */
+    .synapse {
+      stroke-dasharray: 5, 5;
+      animation: flow 2s linear infinite;
+    }
+
+    @keyframes flow {
+      to {
+        stroke-dashoffset: -10;
+      }
+    }
+
+    .synapse-active {
+      stroke-width: 3;
+      filter: drop-shadow(0 0 4px currentColor);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .side-panel {
+        width: 100%;
+        right: -100%;
+      }
+
+      .legend,
+      .stats-panel,
+      .controls-panel {
+        font-size: 0.75rem;
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <div class="header-icon">🧠</div>
+      <div>
+        <h1>Neuron Mapping - Neural Network Visualization</h1>
+        <p class="header-subtitle">Visualisasi monitoring berbasis arsitektur neural network</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div id="connectionStatus" class="connection-badge disconnected">
+        <span class="status-dot"></span>
+        Terputus
+      </div>
+      <button class="btn btn-secondary" onclick="window.location.href='/'">
+        ← Dashboard
+      </button>
+      <button class="btn btn-secondary" onclick="window.location.href='/Atom-map.html'">
+        🫧 Atom
+      </button>
+      <button class="btn btn-secondary" onclick="window.location.href='/tree-map.html'">
+        🌳 Tree
+      </button>
+      <button class="btn btn-primary" onclick="loadData()">
+        🔄 Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Membangun jaringan neural...</div>
+    </div>
+
+    <!-- Neural Network Container -->
+    <div class="neural-container">
+      <svg id="neural-network"></svg>
+
+      <!-- Icon Buttons - Top Left -->
+      <div class="icon-buttons top-left">
+        <div class="icon-btn" onclick="toggleLegend()" id="legendBtn">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" />
+            <circle cx="12" cy="12" r="8" opacity="0.4" />
+            <circle cx="12" cy="12" r="11" opacity="0.2" />
+          </svg>
+          <div class="icon-tooltip">Legend</div>
+        </div>
+      </div>
+
+      <!-- Icon Buttons - Top Right -->
+      <div class="icon-buttons top-right">
+        <div class="icon-btn" onclick="toggleStats()" id="statsBtn">
+          <svg viewBox="0 0 24 24">
+            <line x1="12" y1="20" x2="12" y2="10" />
+            <line x1="18" y1="20" x2="18" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="16" />
+          </svg>
+          <div class="icon-tooltip" style="left: auto; right: 60px;">Statistics</div>
+        </div>
+      </div>
+
+      <!-- Icon Buttons - Bottom Left -->
+      <div class="icon-buttons bottom-left">
+        <div class="icon-btn" onclick="toggleControls()" id="controlsBtn">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="1" />
+            <circle cx="12" cy="5" r="1" />
+            <circle cx="12" cy="19" r="1" />
+          </svg>
+          <div class="icon-tooltip">Controls</div>
+        </div>
+        <div class="icon-btn" onclick="toggleFullscreen()" id="fullscreenBtn">
+          <svg viewBox="0 0 24 24" id="fullscreenIcon">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+          </svg>
+          <div class="icon-tooltip">Fullscreen</div>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend" id="legendPanel" style="top: 80px;">
+        <div class="legend-title">🧬 Network Layers</div>
+        <div class="legend-item">
+          <div class="legend-neuron" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);"></div>
+          <span>Input Layer (Root)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-neuron" style="background: #3b82f6;"></div>
+          <span>Hidden Layer (Services)</span>
+        </div>
+
+        <div class="legend-divider"></div>
+
+        <div class="legend-title">⚡ Neuron Status</div>
+        <div class="legend-item">
+          <div class="legend-neuron" style="background: #10b981;"></div>
+          <span>Active (UP)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-neuron" style="background: #ef4444;"></div>
+          <span>Inactive (DOWN)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-neuron" style="background: #f59e0b;"></div>
+          <span>Slow (TIMEOUT)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-neuron" style="background: #94a3b8;"></div>
+          <span>Unknown</span>
+        </div>
+
+        <div class="legend-divider"></div>
+
+        <div class="legend-title">🔗 Synapses</div>
+        <div class="legend-item">
+          <div style="width: 40px; height: 2px; background: var(--accent-success);"></div>
+          <span>Strong Signal</span>
+        </div>
+        <div class="legend-item">
+          <div style="width: 40px; height: 2px; background: var(--accent-warning); opacity: 0.5;"></div>
+          <span>Weak Signal</span>
+        </div>
+      </div>
+
+      <!-- Stats Panel -->
+      <div class="stats-panel" id="statsPanel" style="top: 80px;">
+        <div class="stats-panel-title">🧮 Network Statistics</div>
+        <div class="stat-item">
+          <span class="stat-label">Total Neurons:</span>
+          <span class="stat-value" id="totalNeurons">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Active:</span>
+          <span class="stat-value" style="color: var(--accent-success);" id="activeNeurons">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Inactive:</span>
+          <span class="stat-value" style="color: var(--accent-danger);" id="inactiveNeurons">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Slow Response:</span>
+          <span class="stat-value" style="color: var(--accent-warning);" id="slowNeurons">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Synapses:</span>
+          <span class="stat-value" id="totalSynapses">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Network Layers:</span>
+          <span class="stat-value" id="totalLayers">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Avg Response:</span>
+          <span class="stat-value" id="avgResponse">0ms</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Last Update:</span>
+          <span class="stat-value" style="font-size: 0.7rem;" id="lastUpdate">-</span>
+        </div>
+      </div>
+
+      <!-- Controls Panel -->
+      <div class="controls-panel" id="controlsPanel" style="bottom: 80px;">
+        <div class="control-btn" onclick="toggleAnimation()" id="animateBtn">
+          <span id="animateIcon">⏸️</span>
+          <span id="animateText">Pause</span>
+        </div>
+        <div class="control-btn" onclick="resetNetwork()">
+          <span>🔄</span>
+          <span>Reset</span>
+        </div>
+        <div class="control-btn" onclick="toggleSynapses()" id="synapsesBtn">
+          <span>🔗</span>
+          <span id="synapsesText">Hide Links</span>
+        </div>
+      </div>
+
+      <!-- Tooltip -->
+      <div class="neuron-tooltip" id="neuronTooltip"></div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="side-panel" id="sidePanel">
+      <div class="side-panel-header">
+        <div class="side-panel-title" id="sidePanelTitle">Neuron Details</div>
+        <div class="close-btn" onclick="closeSidePanel()">×</div>
+      </div>
+      <div class="side-panel-body" id="sidePanelBody">
+        <p style="color: var(--text-muted); text-align: center; padding: 40px;">
+          Klik neuron untuk melihat detail lengkap
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Three.js PointsSphere function for fuzzy particle nodes
+    function PointsSphere(n, dri, r, dro) {
+      // n: points count, dri: inner difference, r: radius main, dro: outer difference
+      const pts = [];
+
+      for (let i = 0; i < n; i++) {
+        const inout = (Math.random() - 0.5) * 2;
+        const lim = (inout >= 0 ? dro : dri);
+        const rand = r + Math.pow(Math.random(), 3) * lim * inout;
+
+        const θ = Math.PI * 2 * Math.random();
+        const φ = Math.acos(2 * Math.random() - 1);
+
+        const ps = new THREE.Vector3(
+          Math.cos(θ) * Math.sin(φ),
+          Math.sin(θ) * Math.sin(φ),
+          Math.cos(φ)
+        );
+        pts.push(ps.multiplyScalar(rand));
+      }
+
+      const geometry = new THREE.BufferGeometry().setFromPoints(pts);
+      return geometry;
+    }
+
+    // Configuration
+    const CONFIG = {
+      neuronRadius: 18,
+      inputNeuronRadius: 30,
+      layerSpacing: 280,
+      neuronSpacing: 100,
+      minNeuronSpacing: 80,
+      synapseOpacity: 0.4,
+      animationSpeed: 0.02,
+      // Three.js particle settings
+      particleCount: 300,          // Jumlah partikel per node
+      particleInnerDiff: 0.8,      // Perbedaan radius dalam
+      particleOuterDiff: 1.2,      // Perbedaan radius luar
+      useThreeJSNodes: true        // Toggle untuk menggunakan Three.js nodes
+    };
+
+    // Status color mapping
+    const STATUS_COLORS = {
+      'UP': '#10b981',
+      'DOWN': '#ef4444',
+      'TIMEOUT': '#f59e0b',
+      'ERROR': '#ef4444',
+      'PARTIAL': '#f59e0b',
+      'UNKNOWN': '#94a3b8'
+    };
+
+    // Global variables
+    let ws = null;
+    let svg = null;
+    let g = null;
+    let currentData = null;
+    let selectedNeuron = null;
+    let isAnimating = true;
+    let showSynapses = true;
+    let zoom = null;
+
+    // Three.js variables
+    let threeRenderer = null;
+    let threeScenes = {};  // Store scene for each neuron
+    let animationFrameId = null;
+
+    // Toggle functions
+    function toggleLegend() {
+      const panel = document.getElementById('legendPanel');
+      const btn = document.getElementById('legendBtn');
+      panel.classList.toggle('open');
+      btn.classList.toggle('active');
+    }
+
+    function toggleStats() {
+      const panel = document.getElementById('statsPanel');
+      const btn = document.getElementById('statsBtn');
+      panel.classList.toggle('open');
+      btn.classList.toggle('active');
+    }
+
+    function toggleControls() {
+      const panel = document.getElementById('controlsPanel');
+      const btn = document.getElementById('controlsBtn');
+      panel.classList.toggle('open');
+      btn.classList.toggle('active');
+    }
+
+    function toggleAnimation() {
+      isAnimating = !isAnimating;
+      const icon = document.getElementById('animateIcon');
+      const text = document.getElementById('animateText');
+
+      if (isAnimating) {
+        icon.textContent = '⏸️';
+        text.textContent = 'Pause';
+        animateSynapses();
+        if (CONFIG.useThreeJSNodes) {
+          animateThreeJSNodes();
+        }
+      } else {
+        icon.textContent = '▶️';
+        text.textContent = 'Play';
+      }
+    }
+
+    function toggleSynapses() {
+      showSynapses = !showSynapses;
+      const text = document.getElementById('synapsesText');
+
+      g.selectAll('.synapse')
+        .transition()
+        .duration(300)
+        .style('opacity', showSynapses ? CONFIG.synapseOpacity : 0);
+
+      text.textContent = showSynapses ? 'Hide Links' : 'Show Links';
+    }
+
+    function toggleFullscreen() {
+      const elem = document.documentElement;
+      const icon = document.getElementById('fullscreenIcon');
+
+      if (!document.fullscreenElement) {
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen();
+        } else if (elem.mozRequestFullScreen) {
+          elem.mozRequestFullScreen();
+        } else if (elem.webkitRequestFullscreen) {
+          elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+          elem.msRequestFullscreen();
+        }
+        icon.innerHTML = '<path d="M3 8V5a2 2 0 0 1 2-2h3m10 0h3a2 2 0 0 1 2 2v3m0 10v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/>';
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+        icon.innerHTML = '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>';
+      }
+    }
+
+    // Initialize Three.js for particle nodes
+    function initThreeJSNode(d3Selection, nodeData, radius) {
+      // **1. Setup Container - Create foreignObject for Three.js canvas**
+      const size = (radius || CONFIG.neuronRadius) * 2; // Diameter node
+
+      const foreignObject = d3Selection.append('foreignObject')
+        .attr('x', -size / 2)
+        .attr('y', -size / 2)
+        .attr('width', size)
+        .attr('height', size)
+        .style('overflow', 'visible')
+        .style('pointer-events', 'none'); // Biarkan event lewat ke SVG
+
+      const container = foreignObject.node();
+      const div = document.createElement('div');
+      div.style.width = `${size}px`;
+      div.style.height = `${size}px`;
+      div.style.position = 'relative';
+      container.appendChild(div);
+
+      // **2. Three.js Scene Setup**
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+      camera.position.z = 50;
+
+      const renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: true,
+        premultipliedAlpha: false
+      });
+      renderer.setSize(size, size);
+      renderer.setClearColor(0x000000, 0); // Transparan
+      div.appendChild(renderer.domElement);
+
+      // **3. Particle System - Sphere Distribution**
+      const particleCount = CONFIG.particleCount;
+      const geometry = new THREE.BufferGeometry();
+      const positions = new Float32Array(particleCount * 3);
+      const colors = new Float32Array(particleCount * 3);
+      const baseColor = new THREE.Color(getNodeColor(nodeData));
+
+      const particleRadius = size / 8; // Radius partikel sphere
+
+      for (let i = 0; i < particleCount; i++) {
+        const i3 = i * 3;
+        // Distribusi sphere menggunakan Fibonacci sphere
+        const inout = (Math.random() - 0.5) * 2;
+        const lim = (inout >= 0 ? CONFIG.particleOuterDiff : CONFIG.particleInnerDiff);
+        const r = particleRadius + Math.pow(Math.random(), 3) * lim * inout;
+
+        const theta = Math.PI * 2 * Math.random();
+        const phi = Math.acos(2 * Math.random() - 1);
+
+        positions[i3] = r * Math.sin(phi) * Math.cos(theta);
+        positions[i3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+        positions[i3 + 2] = r * Math.cos(phi);
+
+        colors[i3] = baseColor.r;
+        colors[i3 + 1] = baseColor.g;
+        colors[i3 + 2] = baseColor.b;
+      }
+
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      const material = new THREE.PointsMaterial({
+        size: 1.2,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.8,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      const particles = new THREE.Points(geometry, material);
+      scene.add(particles);
+
+      // **4. Core Sphere**
+      const coreGeometry = new THREE.SphereGeometry(particleRadius * 0.5, 32, 32);
+      const coreMaterial = new THREE.MeshBasicMaterial({
+        color: baseColor,
+        transparent: true,
+        opacity: 0.3,
+        blending: THREE.AdditiveBlending
+      });
+      const coreMesh = new THREE.Mesh(coreGeometry, coreMaterial);
+      scene.add(coreMesh);
+
+      // **5. Glow Sphere**
+      const glowGeometry = new THREE.SphereGeometry(particleRadius * 0.8, 32, 32);
+      const glowMaterial = new THREE.MeshBasicMaterial({
+        color: baseColor,
+        transparent: true,
+        opacity: 0.1,
+        blending: THREE.AdditiveBlending,
+        side: THREE.BackSide
+      });
+      const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+      scene.add(glowMesh);
+
+      // **6. Outer Ring**
+      const ringGeometry = new THREE.RingGeometry(particleRadius * 1.2, particleRadius * 1.3, 64);
+      const ringMaterial = new THREE.MeshBasicMaterial({
+        color: baseColor,
+        transparent: true,
+        opacity: 0.4,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending
+      });
+      const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+      ringMesh.rotation.x = Math.PI / 2;
+      scene.add(ringMesh);
+
+      // **7. Store scene data**
+      const sceneData = {
+        scene,
+        camera,
+        renderer,
+        particles,
+        coreMesh,
+        glowMesh,
+        ringMesh,
+        geometry,
+        color: baseColor,
+        status: nodeData.status || 'UNKNOWN',
+        rotation: { x: 0, y: 0 },
+        errorPulsePhase: 0,
+        errorRing: null
+      };
+
+      threeScenes[nodeData.id] = sceneData;
+
+      // **8. Initial render**
+      renderer.render(scene, camera);
+
+      // Return cleanup function
+      return () => {
+        geometry.dispose();
+        material.dispose();
+        coreGeometry.dispose();
+        coreMaterial.dispose();
+        glowGeometry.dispose();
+        glowMaterial.dispose();
+        ringGeometry.dispose();
+        ringMaterial.dispose();
+        if (sceneData.errorRing) {
+          sceneData.errorRing.geometry.dispose();
+          sceneData.errorRing.material.dispose();
+        }
+        renderer.dispose();
+        div.removeChild(renderer.domElement);
+        container.removeChild(div);
+        delete threeScenes[nodeData.id];
+      };
+    }
+
+    // Helper function to get node size
+    function getNodeSize(node) {
+      if (node.isInput) return CONFIG.inputNeuronRadius;
+      return node.radius || CONFIG.neuronRadius;
+    }
+
+    // Helper function to get node color
+    function getNodeColor(node) {
+      if (node.isInput) return '#8b5cf6';
+      return node.color || STATUS_COLORS[node.status] || STATUS_COLORS['UNKNOWN'];
+    }
+
+    // Animate Three.js particles
+    function animateThreeJSNodes() {
+      if (!CONFIG.useThreeJSNodes || !isAnimating) return;
+
+      const time = Date.now() * 0.001;
+
+      Object.values(threeScenes).forEach(sceneData => {
+        // Rotate particles
+        sceneData.rotation.x += 0.005;
+        sceneData.rotation.y += 0.008;
+
+        sceneData.particles.rotation.x = sceneData.rotation.x;
+        sceneData.particles.rotation.y = sceneData.rotation.y;
+
+        sceneData.coreMesh.rotation.x = sceneData.rotation.x * 0.5;
+        sceneData.coreMesh.rotation.y = sceneData.rotation.y * 0.5;
+
+        sceneData.glowMesh.rotation.x = sceneData.rotation.x * 0.3;
+        sceneData.glowMesh.rotation.y = sceneData.rotation.y * 0.3;
+
+        sceneData.ringMesh.rotation.x = Math.PI / 2 + Math.sin(sceneData.rotation.x) * 0.2;
+        sceneData.ringMesh.rotation.y = sceneData.rotation.y;
+
+        // Normal pulse effect
+        const pulse = 1 + Math.sin(time * 2) * 0.05;
+        sceneData.particles.scale.set(pulse, pulse, pulse);
+
+        // ERROR/DOWN status: Red blinking effect
+        if (sceneData.status === 'DOWN' || sceneData.status === 'ERROR') {
+          // Blink particles to red
+          sceneData.errorPulsePhase += 0.05;
+          const blinkIntensity = Math.abs(Math.sin(sceneData.errorPulsePhase));
+
+          // Mix original color with red based on blink
+          const redColor = new THREE.Color(0xef4444);
+          const blendedColor = sceneData.color.clone().lerp(redColor, blinkIntensity * 0.7);
+
+          sceneData.particles.material.color = blendedColor;
+          sceneData.coreMesh.material.color = blendedColor;
+          sceneData.glowMesh.material.color = blendedColor;
+          sceneData.ringMesh.material.color = blendedColor;
+
+          // Animate error ring if exists
+          if (sceneData.errorRing) {
+            const errorPulse = 0.5 + Math.sin(time * 3) * 0.5;
+            sceneData.errorRing.material.opacity = errorPulse * 0.8;
+            sceneData.errorRing.scale.set(1 + errorPulse * 0.2, 1 + errorPulse * 0.2, 1);
+          }
+        }
+
+        // Render scene
+        sceneData.renderer.render(sceneData.scene, sceneData.camera);
+      });
+
+      animationFrameId = requestAnimationFrame(animateThreeJSNodes);
+    }
+
+    // Update particle color for status change
+    function updateParticleColor(neuronId, newColor, newStatus) {
+      const sceneData = threeScenes[neuronId];
+      if (sceneData) {
+        const color = new THREE.Color(newColor);
+        sceneData.color = color;
+        sceneData.status = newStatus;
+
+        // Update base colors
+        sceneData.particles.material.color = color;
+        sceneData.coreMesh.material.color = color;
+        sceneData.glowMesh.material.color = color;
+        sceneData.ringMesh.material.color = color;
+
+        // Add or remove error ring based on status
+        if (newStatus === 'DOWN' || newStatus === 'ERROR') {
+          if (!sceneData.errorRing) {
+            const size = CONFIG.neuronRadius; // Use base size
+            const errorRingGeometry = new THREE.RingGeometry(size * 0.9, size * 1.1, 32);
+            const errorRingMaterial = new THREE.MeshBasicMaterial({
+              color: 0xef4444,
+              transparent: true,
+              opacity: 0.8,
+              side: THREE.DoubleSide,
+              blending: THREE.AdditiveBlending
+            });
+            sceneData.errorRing = new THREE.Mesh(errorRingGeometry, errorRingMaterial);
+            sceneData.scene.add(sceneData.errorRing);
+          }
+          sceneData.errorPulsePhase = 0;
+        } else {
+          // Remove error ring if status is OK
+          if (sceneData.errorRing) {
+            sceneData.scene.remove(sceneData.errorRing);
+            sceneData.errorRing.geometry.dispose();
+            sceneData.errorRing.material.dispose();
+            sceneData.errorRing = null;
+          }
+        }
+
+        // Re-render
+        sceneData.renderer.render(sceneData.scene, sceneData.camera);
+      }
+    }
+
+    // Cleanup Three.js scenes
+    function cleanupThreeJSScenes() {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+
+      Object.values(threeScenes).forEach(sceneData => {
+        sceneData.particles.geometry.dispose();
+        sceneData.particles.material.dispose();
+        sceneData.coreMesh.geometry.dispose();
+        sceneData.coreMesh.material.dispose();
+        sceneData.glowMesh.geometry.dispose();
+        sceneData.glowMesh.material.dispose();
+        sceneData.ringMesh.geometry.dispose();
+        sceneData.ringMesh.material.dispose();
+        if (sceneData.errorRing) {
+          sceneData.errorRing.geometry.dispose();
+          sceneData.errorRing.material.dispose();
+        }
+        sceneData.renderer.dispose();
+      });
+
+      threeScenes = {};
+    }
+
+    // WebSocket Connection
+    function connectWebSocket() {
+      ws = new WebSocket(`ws://${window.location.host}`);
+
+      ws.onopen = () => {
+        updateConnectionStatus(true);
+        console.log('✅ WebSocket connected');
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('📨 WebSocket message:', data);
+
+        if (data.type === 'monitoring_update' && data.data) {
+          updateNeuronStatus(data.data);
+        } else if (data.type === 'update') {
+          loadData();
+        }
+      };
+
+      ws.onclose = () => {
+        updateConnectionStatus(false);
+        setTimeout(connectWebSocket, 3000);
+      };
+
+      ws.onerror = () => {
+        updateConnectionStatus(false);
+      };
+    }
+
+    function updateConnectionStatus(connected) {
+      const statusEl = document.getElementById('connectionStatus');
+      if (connected) {
+        statusEl.className = 'connection-badge connected';
+        statusEl.innerHTML = '<span class="status-dot"></span>Terhubung';
+      } else {
+        statusEl.className = 'connection-badge disconnected';
+        statusEl.innerHTML = '<span class="status-dot"></span>Terputus';
+      }
+    }
+
+    // Initialize Neural Network
+    function initNeuralNetwork() {
+      const container = document.getElementById('neural-network');
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      // Create SVG
+      svg = d3.select('#neural-network')
+        .attr('width', width)
+        .attr('height', height);
+
+      // Create zoom behavior
+      zoom = d3.zoom()
+        .scaleExtent([0.3, 3])
+        .on('zoom', (event) => {
+          g.attr('transform', event.transform);
+        });
+
+      svg.call(zoom);
+
+      // Create main group
+      g = svg.append('g');
+
+      // Add gradient definitions
+      const defs = svg.append('defs');
+
+      // Input neuron gradient
+      const inputGradient = defs.append('radialGradient')
+        .attr('id', 'inputGradient');
+      inputGradient.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', '#ec4899');
+      inputGradient.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', '#8b5cf6');
+
+      // Glow filter
+      const filter = defs.append('filter')
+        .attr('id', 'glow');
+      filter.append('feGaussianBlur')
+        .attr('stdDeviation', '3')
+        .attr('result', 'coloredBlur');
+      const feMerge = filter.append('feMerge');
+      feMerge.append('feMergeNode')
+        .attr('in', 'coloredBlur');
+      feMerge.append('feMergeNode')
+        .attr('in', 'SourceGraphic');
+    }
+
+    // Load data from API
+    async function loadData() {
+      try {
+        const response = await fetch('/api/urls');
+        const result = await response.json();
+        const urls = result.data || result;
+
+        // Transform data to neural network structure
+        const networkData = transformToNeuralNetwork(urls);
+        currentData = networkData;
+
+        // Render network
+        renderNeuralNetwork(networkData);
+
+        // Update stats
+        updateStats(networkData);
+
+        // Hide loading
+        document.getElementById('loadingOverlay').style.display = 'none';
+
+        console.log('✅ Neural network loaded:', networkData);
+      } catch (error) {
+        console.error('❌ Error loading data:', error);
+      }
+    }
+
+    // Transform URLs to neural network structure
+    function transformToNeuralNetwork(urls) {
+      const neurons = [];
+      const synapses = [];
+
+      // Layer 0: Input neuron (root)
+      const inputNeuron = {
+        id: 'input',
+        name: 'Monitoring System',
+        type: 'input',
+        layer: 0,
+        status: 'UP',
+        isInput: true,
+        color: 'url(#inputGradient)'
+      };
+      neurons.push(inputNeuron);
+
+      // Layer 1: Service neurons
+      urls.forEach((url, index) => {
+        const neuron = {
+          id: url._id,
+          name: url.name || url.url,
+          url: url.url,
+          type: 'hidden',
+          layer: 1,
+          index: index,
+          status: url.status || 'UNKNOWN',
+          responseTime: url.responseTime,
+          lastChecked: url.lastChecked,
+          httpStatus: url.httpStatus,
+          statusMessage: url.statusMessage,
+          description: url.description,
+          requiresAuth: url.requiresAuth,
+          color: STATUS_COLORS[url.status] || STATUS_COLORS['UNKNOWN']
+        };
+        neurons.push(neuron);
+
+        // Create synapse from input to this neuron
+        synapses.push({
+          source: 'input',
+          target: url._id,
+          strength: url.status === 'UP' ? 1 : 0.3
+        });
+      });
+
+      return { neurons, synapses };
+    }
+
+    // Render neural network
+    function renderNeuralNetwork(data) {
+      const container = document.getElementById('neural-network');
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      // Clear existing
+      g.selectAll('*').remove();
+      cleanupThreeJSScenes();
+
+      // Calculate positions
+      const layers = d3.group(data.neurons, d => d.layer);
+      const layerCount = layers.size;
+
+      const MAX_VERTICAL_NODES = 9; // Maksimal 9 node per kolom
+      const COLUMN_SPACING = 280; // Jarak antar kolom
+      const BASE_LEFT_MARGIN = 150; // Margin kiri dasar
+
+      data.neurons.forEach(neuron => {
+        const layerNeurons = layers.get(neuron.layer);
+        const layerSize = layerNeurons.length;
+
+        if (neuron.layer === 0) {
+          // Input neuron - positioned at center-left
+          neuron.x = BASE_LEFT_MARGIN;
+          neuron.y = height / 2;
+        } else {
+          // Hidden layer neurons - distributed in columns with max 9 per column
+          const columnIndex = Math.floor(neuron.index / MAX_VERTICAL_NODES);
+          const rowIndex = neuron.index % MAX_VERTICAL_NODES;
+
+          // Hitung jumlah kolom yang dibutuhkan
+          const totalColumns = Math.ceil(layerSize / MAX_VERTICAL_NODES);
+
+          // Hitung jumlah node di kolom saat ini
+          const nodesInCurrentColumn = (columnIndex === totalColumns - 1)
+            ? layerSize - (columnIndex * MAX_VERTICAL_NODES)
+            : MAX_VERTICAL_NODES;
+
+          // Spacing vertikal yang menyesuaikan dengan jumlah node di kolom
+          const verticalSpacing = Math.min(CONFIG.neuronSpacing, (height - 100) / nodesInCurrentColumn);
+          const totalHeight = (nodesInCurrentColumn - 1) * verticalSpacing;
+          const startY = (height - totalHeight) / 2;
+
+          // Posisi X: mulai dari tengah, sesuaikan berdasarkan jumlah kolom
+          const totalWidth = (totalColumns - 1) * COLUMN_SPACING;
+          const startX = (width - totalWidth) / 2;
+
+          neuron.x = startX + (columnIndex * COLUMN_SPACING);
+          neuron.y = startY + (rowIndex * verticalSpacing);
+        }
+      });
+
+      // Create synapses (connections)
+      const synapse = g.append('g')
+        .attr('class', 'synapses')
+        .selectAll('line')
+        .data(data.synapses)
+        .enter()
+        .append('line')
+        .attr('class', 'synapse')
+        .attr('x1', d => {
+          const source = data.neurons.find(n => n.id === d.source);
+          return source.x;
+        })
+        .attr('y1', d => {
+          const source = data.neurons.find(n => n.id === d.source);
+          return source.y;
+        })
+        .attr('x2', d => {
+          const target = data.neurons.find(n => n.id === d.target);
+          return target.x;
+        })
+        .attr('y2', d => {
+          const target = data.neurons.find(n => n.id === d.target);
+          return target.y;
+        })
+        .attr('stroke', d => d.strength > 0.5 ? 'var(--accent-success)' : 'var(--accent-warning)')
+        .attr('stroke-width', d => d.strength * 2)
+        .attr('opacity', 0)
+        .transition()
+        .duration(800)
+        .attr('opacity', d => d.strength * CONFIG.synapseOpacity);
+
+      // Create neuron nodes
+      const neuron = g.append('g')
+        .attr('class', 'neurons')
+        .selectAll('g')
+        .data(data.neurons)
+        .enter()
+        .append('g')
+        .attr('class', d => `neuron ${d.type}`)
+        .attr('data-id', d => d.id)
+        .attr('transform', d => `translate(${d.x},${d.y})`);
+
+      const nodeGroup = neuron.append('g')
+        .attr('class', 'node-group');
+
+      // Add circle only if Three.js is not enabled
+      if (!CONFIG.useThreeJSNodes) {
+        nodeGroup.append('circle')
+          .attr('class', 'node-circle')
+          .attr('r', d => d.radius || CONFIG.neuronRadius)
+          .style('fill', d => d.color || '#8b5cf6')
+          .style('stroke', '#fff')
+          .style('stroke-width', 2)
+          .style('cursor', 'pointer');
+      }
+
+      // Add Three.js particle system if enabled
+      if (CONFIG.useThreeJSNodes) {
+        nodeGroup.each(function (d) {
+          initThreeJSNode(d3.select(this), d, d.radius || CONFIG.neuronRadius);
+        });
+      }
+
+      // **Circle (Node) - Disembunyikan jika Three.js aktif**
+      const circle = nodeGroup.append('circle')
+        .attr('class', 'node-circle')
+        .attr('r', d => getNodeSize(d))
+        .attr('fill', d => getNodeColor(d))
+        .attr('stroke', d => d.status === 'DOWN' ? '#ff0000' : '#ffffff')
+        .attr('stroke-width', 2)
+        .style('filter', 'url(#glow)')
+        .style('cursor', 'pointer')
+        .style('opacity', CONFIG.useThreeJSNodes ? 0 : 1) // **Sembunyikan jika Three.js aktif**
+        .style('pointer-events', CONFIG.useThreeJSNodes ? 'none' : 'all'); // **Nonaktifkan interaksi jika Three.js aktif**
+
+      // Add icon
+      nodeGroup.append('text')
+        .attr('class', 'node-icon')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '0.35em')
+        .style('font-size', d => `${(d.radius || CONFIG.neuronRadius) * 0.8}px`)
+        .style('fill', '#fff')
+        .style('pointer-events', 'none')
+        .text(d => d.icon || '🧠');
+
+      // Add labels
+      neuron.append('text')
+        .attr('dy', d => {
+          if (d.type === 'input') return CONFIG.neuronRadius * 1.8;
+          if (d.type === 'output') return CONFIG.neuronRadius * 1.7;
+          return CONFIG.neuronRadius * 1.5;
+        })
+        .attr('text-anchor', 'middle')
+        .style('fill', '#e5e7eb')
+        .style('font-size', '11px')
+        .style('font-weight', '500')
+        .style('pointer-events', 'none')
+        .style('user-select', 'none')
+        .text(d => d.name.length > 15 ? d.name.substring(0, 15) + '...' : d.name);
+
+      // Add status indicator - ONLY if Three.js is disabled
+      if (!CONFIG.useThreeJSNodes) {
+        neuron.append('circle')
+          .attr('class', 'status-indicator')
+          .attr('r', 4)
+          .attr('cx', d => {
+            if (d.type === 'input') return CONFIG.neuronRadius * 0.9;
+            if (d.type === 'output') return CONFIG.neuronRadius * 0.85;
+            return CONFIG.neuronRadius * 0.7;
+          })
+          .attr('cy', d => {
+            if (d.type === 'input') return -CONFIG.neuronRadius * 0.9;
+            if (d.type === 'output') return -CONFIG.neuronRadius * 0.85;
+            return -CONFIG.neuronRadius * 0.7;
+          })
+          .attr('fill', d => {
+            if (d.status === 'UP' || d.status === 'OK') return '#10b981';
+            if (d.status === 'DOWN' || d.status === 'ERROR') return '#ef4444';
+            return '#f59e0b';
+          })
+          .style('filter', 'url(#statusGlow)');
+      }
+
+      // Add event listeners
+      neuron.on('click', (event, d) => {
+        if (!d.isInput) {
+          hideTooltip(); // ✅ Hide tooltip when showing modal
+          showNeuronDetails(d);
+        }
+      })
+        .on('mouseover', (event, d) => {
+          showTooltip(event, d);
+
+          // Highlight connected synapses
+          g.selectAll('.synapse')
+            .transition()
+            .duration(200)
+            .attr('opacity', syn => {
+              if (syn.source === d.id || syn.target === d.id) {
+                return 0.8;
+              }
+              return 0.1;
+            })
+            .attr('stroke-width', syn => {
+              if (syn.source === d.id || syn.target === d.id) {
+                return syn.strength * 4;
+              }
+              return syn.strength * 2;
+            });
+
+          // Enlarge particle sphere if using Three.js
+          if (CONFIG.useThreeJSNodes && threeScenes[d.id]) {
+            const sceneData = threeScenes[d.id];
+            sceneData.particles.scale.set(1.3, 1.3, 1.3);
+            sceneData.glowMesh.scale.set(1.3, 1.3, 1.3);
+          } else {
+            d3.select(event.currentTarget).select('circle')
+              .transition()
+              .duration(200)
+              .attr('r', d => (d.isInput ? CONFIG.inputNeuronRadius : CONFIG.neuronRadius) * 1.2);
+          }
+        })
+        .on('mouseout', (event, d) => {
+          hideTooltip(); // ✅ Ensure tooltip disappears
+
+          // Reset synapses
+          g.selectAll('.synapse')
+            .transition()
+            .duration(200)
+            .attr('opacity', syn => syn.strength * CONFIG.synapseOpacity)
+            .attr('stroke-width', syn => syn.strength * 2);
+
+          // Reset particle sphere size
+          if (CONFIG.useThreeJSNodes && threeScenes[d.id]) {
+            const sceneData = threeScenes[d.id];
+            sceneData.particles.scale.set(1, 1, 1);
+            sceneData.glowMesh.scale.set(1, 1, 1);
+          } else {
+            d3.select(event.currentTarget).select('circle')
+              .transition()
+              .duration(200)
+              .attr('r', d => d.isInput ? CONFIG.inputNeuronRadius : CONFIG.neuronRadius);
+          }
+        });
+
+      // Animate neurons appearing
+      neuron.transition()
+        .delay((d, i) => i * 50)
+        .duration(600)
+        .style('opacity', 1);
+
+      // Start animations
+      if (isAnimating) {
+        animateSynapses();
+        if (CONFIG.useThreeJSNodes) {
+          animateThreeJSNodes();
+        }
+      }
+    }
+
+    // Animate synapses
+    function animateSynapses() {
+      if (!isAnimating) return;
+
+      g.selectAll('.synapse')
+        .attr('stroke-dasharray', '5, 5')
+        .attr('stroke-dashoffset', 0)
+        .transition()
+        .duration(2000)
+        .ease(d3.easeLinear)
+        .attr('stroke-dashoffset', -10)
+        .on('end', animateSynapses);
+    }
+
+    // Update single neuron status
+    function updateNeuronStatus(data) {
+      const neuronId = data.urlId || data._id;
+      const neuron = currentData.neurons.find(n => n.id === neuronId);
+
+      if (neuron) {
+        // Update neuron data
+        neuron.status = data.status;
+        neuron.responseTime = data.responseTime;
+        neuron.lastChecked = new Date();
+        neuron.httpStatus = data.httpStatus;
+        neuron.statusMessage = data.statusMessage;
+        neuron.color = STATUS_COLORS[data.status] || STATUS_COLORS['UNKNOWN'];
+
+        // Update visual
+        if (CONFIG.useThreeJSNodes) {
+          // Update Three.js particle color
+          updateParticleColor(neuronId, neuron.color, neuron.status);
+        } else {
+          // Update D3 circle
+          const neuronElement = g.selectAll('.neuron')
+            .filter(d => d.id === neuronId);
+
+          neuronElement.select('circle')
+            .transition()
+            .duration(500)
+            .attr('fill', neuron.color);
+        }
+
+        const iconMap = {
+          'UP': '✓',
+          'DOWN': '✕',
+          'TIMEOUT': '⏱',
+          'ERROR': '⚠',
+          'UNKNOWN': '?'
+        };
+
+        g.selectAll('.neuron')
+          .filter(d => d.id === neuronId)
+          .select('text')
+          .text(iconMap[data.status] || '?');
+
+        // Update connected synapses
+        g.selectAll('.synapse')
+          .filter(d => d.target === neuronId)
+          .transition()
+          .duration(500)
+          .attr('stroke', data.status === 'UP' ? 'var(--accent-success)' : 'var(--accent-warning)')
+          .attr('opacity', (data.status === 'UP' ? 1 : 0.3) * CONFIG.synapseOpacity);
+
+        // Update stats
+        updateStatsFromCurrentData();
+
+        // If side panel is open for this neuron, update it
+        if (selectedNeuron && selectedNeuron.id === neuronId) {
+          showNeuronDetails(neuron);
+        }
+
+        console.log('✅ Neuron updated:', neuronId, data.status);
+      }
+    }
+
+    // Reset network position
+    function resetNetwork() {
+      svg.transition().call(
+        zoom.transform,
+        d3.zoomIdentity
+      );
+    }
+
+    // Tooltip
+    function showTooltip(event, d) {
+      const tooltip = document.getElementById('neuronTooltip');
+
+      if (d.isInput) {
+        tooltip.innerHTML = `
+          <div class="tooltip-name">${d.name}</div>
+          <div class="tooltip-layer">Input Layer</div>
+          <div class="tooltip-info">⚡ Central hub untuk semua services</div>
+        `;
+      } else {
+        tooltip.innerHTML = `
+          <div class="tooltip-name">${d.name}</div>
+          <div class="tooltip-layer">Hidden Layer - Service Neuron</div>
+          <div class="tooltip-status">
+            <span class="status-badge status-${d.status}">${d.status}</span>
+          </div>
+          <div class="tooltip-info">
+            ⚡ Response: <strong>${d.responseTime ? d.responseTime + 'ms' : 'N/A'}</strong>
+          </div>
+          ${d.httpStatus ? `<div class="tooltip-info">📡 HTTP: <strong>${d.httpStatus}</strong></div>` : ''}
+        `;
+      }
+
+      tooltip.style.left = (event.pageX + 15) + 'px';
+      tooltip.style.top = (event.pageY + 15) + 'px';
+      tooltip.classList.add('visible');
+    }
+
+    function hideTooltip() {
+      const tooltip = document.getElementById('neuronTooltip');
+      tooltip.classList.remove('visible');
+    }
+
+    // Side Panel
+    function showNeuronDetails(neuron) {
+      selectedNeuron = neuron;
+      const panel = document.getElementById('sidePanel');
+      const title = document.getElementById('sidePanelTitle');
+      const body = document.getElementById('sidePanelBody');
+
+      title.textContent = neuron.name;
+
+      body.innerHTML = `
+        <div class="detail-section">
+          <div class="detail-section-title">🧬 Neuron Information</div>
+          <div class="detail-item">
+            <div class="detail-label">Neuron Type</div>
+            <div class="detail-value">Hidden Layer - Service Neuron</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Layer Position</div>
+            <div class="detail-value">Layer ${neuron.layer}</div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-title">📊 Status</div>
+          <div class="detail-item">
+            <div class="detail-label">Current Status</div>
+            <div class="detail-value">
+              <span class="status-badge status-${neuron.status}">${neuron.status}</span>
+            </div>
+          </div>
+          ${neuron.statusMessage ? `
+          <div class="detail-item">
+            <div class="detail-label">Message</div>
+            <div class="detail-value">${neuron.statusMessage}</div>
+          </div>
+          ` : ''}
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-title">🔗 URL Information</div>
+          <div class="detail-item">
+            <div class="detail-label">URL</div>
+            <div class="detail-value" style="font-size: 0.813rem; word-break: break-all;">${neuron.url}</div>
+          </div>
+          ${neuron.description ? `
+          <div class="detail-item">
+            <div class="detail-label">Description</div>
+            <div class="detail-value">${neuron.description}</div>
+          </div>
+          ` : ''}
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-title">⚡ Performance</div>
+          <div class="detail-item">
+            <div class="detail-label">Response Time</div>
+            <div class="detail-value" style="font-size: 1.5rem; color: ${neuron.responseTime > 3000 ? 'var(--accent-danger)' : neuron.responseTime > 1000 ? 'var(--accent-warning)' : 'var(--accent-success)'};">
+              ${neuron.responseTime ? neuron.responseTime + 'ms' : 'N/A'}
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">HTTP Status</div>
+            <div class="detail-value">${neuron.httpStatus || 'N/A'}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Last Checked</div>
+            <div class="detail-value" style="font-size: 0.813rem;">
+              ${neuron.lastChecked ? new Date(neuron.lastChecked).toLocaleString('id-ID') : 'Never'}
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-title">🔒 Security</div>
+          <div class="detail-item">
+            <div class="detail-label">Requires Authentication</div>
+            <div class="detail-value">${neuron.requiresAuth ? '✓ Yes' : '✕ No'}</div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-title">🎨 Visual Info</div>
+          <div class="detail-item">
+            <div class="detail-label">Neuron Color</div>
+            <div class="detail-value">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 24px; height: 24px; border-radius: 50%; background: ${neuron.color}; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"></div>
+                <span>${neuron.color}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; display: flex; gap: 12px;">
+          <button class="btn btn-primary" style="flex: 1;" onclick="recheckNeuron('${neuron.id}')">
+            🔄 Check Now
+          </button>
+          <button class="btn btn-secondary" style="flex: 1;" onclick="focusNeuron('${neuron.id}')">
+            🎯 Focus
+          </button>
+        </div>
+      `;
+
+      panel.classList.add('open');
+    }
+
+    function closeSidePanel() {
+      const panel = document.getElementById('sidePanel');
+      panel.classList.remove('open');
+      selectedNeuron = null;
+    }
+
+    // Recheck neuron
+    async function recheckNeuron(neuronId) {
+      try {
+        const response = await fetch(`/api/urls/${neuronId}/check`, { method: 'POST' });
+        if (response.ok) {
+          console.log('✅ Neuron rechecked:', neuronId);
+        }
+      } catch (error) {
+        console.error('❌ Error rechecking neuron:', error);
+      }
+    }
+
+    // Focus on specific neuron
+    function focusNeuron(neuronId) {
+      const neuron = currentData.neurons.find(n => n.id === neuronId);
+      if (neuron) {
+        // Highlight the neuron
+        g.selectAll('.neuron')
+          .transition()
+          .duration(300)
+          .style('opacity', d => d.id === neuronId ? 1 : 0.2);
+
+        // Highlight connected synapses
+        g.selectAll('.synapse')
+          .transition()
+          .duration(300)
+          .attr('opacity', d => {
+            if (d.source === neuronId || d.target === neuronId) {
+              return 0.8;
+            }
+            return 0.05;
+          });
+
+        // Reset after 2 seconds
+        setTimeout(() => {
+          g.selectAll('.neuron')
+            .transition()
+            .duration(500)
+            .style('opacity', 1);
+
+          g.selectAll('.synapse')
+            .transition()
+            .duration(500)
+            .attr('opacity', d => d.strength * CONFIG.synapseOpacity);
+        }, 2000);
+      }
+    }
+
+    // Update stats
+    function updateStats(data) {
+      const serviceNeurons = data.neurons.filter(n => !n.isInput);
+
+      document.getElementById('totalNeurons').textContent = data.neurons.length;
+      document.getElementById('activeNeurons').textContent = serviceNeurons.filter(n => n.status === 'UP').length;
+      document.getElementById('inactiveNeurons').textContent = serviceNeurons.filter(n => n.status === 'DOWN' || n.status === 'ERROR').length;
+      document.getElementById('slowNeurons').textContent = serviceNeurons.filter(n => n.status === 'TIMEOUT').length;
+      document.getElementById('totalSynapses').textContent = data.synapses.length;
+      document.getElementById('totalLayers').textContent = 2;
+
+      const responseTimes = serviceNeurons.filter(n => n.responseTime > 0).map(n => n.responseTime);
+      const avgResponse = responseTimes.length > 0
+        ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
+        : 0;
+      document.getElementById('avgResponse').textContent = avgResponse + 'ms';
+
+      document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('id-ID');
+    }
+
+    function updateStatsFromCurrentData() {
+      if (currentData) {
+        updateStats(currentData);
+      }
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      initNeuralNetwork();
+      connectWebSocket();
+      loadData();
+
+      // Auto refresh every 30 seconds
+      setInterval(loadData, 30000);
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (currentData) {
+        renderNeuralNetwork(currentData);
+      }
+    });
+  </script>
+</body>
+
+</html>
+`

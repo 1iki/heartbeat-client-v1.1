@@ -1,0 +1,48 @@
+{
+  "totalNodes": 36,
+  "statusCounts": {
+    "STABLE": 32,
+    "DOWN": 3,
+    "WARNING": 1
+  },
+  "avgLatency": 846.58,
+  "minLatency": 52,
+  "maxLatency": 18616,
+  "lastChecked": {
+    "oldest": "2026-02-06T06:29:04.754Z",
+    "newest": "2026-02-06T06:29:53.154Z"
+  },
+  "missingUrlCount": 0,
+  "top5Slowest": [
+    {
+      "name": "Ambulance Maze",
+      "url": "https://erlangga.ai/coding/mainkan?g=ambulance-maze&level=1",
+      "latency": 18616,
+      "status": "STABLE"
+    },
+    {
+      "name": "Error Testing2",
+      "url": "https://erlangga.xyz/coding/mainkan?g=????",
+      "latency": 976,
+      "status": "WARNING"
+    },
+    {
+      "name": "Math-runner",
+      "url": "http://erlangga.ai/coding/mainkan?g=math-runner-sd",
+      "latency": 847,
+      "status": "STABLE"
+    },
+    {
+      "name": "The Last Code",
+      "url": "https://erlangga.ai/coding/mainkan?g=the-last-code",
+      "latency": 399,
+      "status": "STABLE"
+    },
+    {
+      "name": "Viral Content Creator",
+      "url": "https://erlangga.ai/coding/mainkan?g=viral-content-simulator",
+      "latency": 398,
+      "status": "STABLE"
+    }
+  ]
+}

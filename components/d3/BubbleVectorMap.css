@@ -1,0 +1,135 @@
+/* BubbleVectorMap.css */
+
+.vector-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+}
+
+#vector-chart {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Atom/Node Styles */
+.atom-node {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.atom-node:hover {
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+}
+
+.atom-circle {
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 3px;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.atom-node:hover .atom-circle {
+    stroke: rgba(255, 255, 255, 0.3);
+}
+
+.atom-icon {
+    font-weight: 800;
+    fill: white;
+    pointer-events: none;
+    user-select: none;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-anchor: middle;
+}
+
+.atom-response {
+    font-weight: 700;
+    fill: white;
+    pointer-events: none;
+    user-select: none;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-anchor: middle;
+}
+
+.atom-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    fill: rgba(255, 255, 255, 0.7);
+    pointer-events: none;
+    user-select: none;
+    text-anchor: middle;
+}
+
+/* Tooltip */
+.vector-tooltip {
+    position: absolute;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 0.813rem;
+    color: #f1f5f9;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    min-width: 200px;
+    pointer-events: none;
+}
+
+.vector-tooltip.visible {
+    opacity: 1;
+}
+
+.tooltip-name {
+    font-weight: 800;
+    margin-bottom: 6px;
+    color: #fff;
+    font-size: 0.938rem;
+}
+
+.tooltip-status {
+    font-size: 0.75rem;
+    margin-bottom: 6px;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status-badge.status-UP {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.status-DOWN {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-badge.status-WARNING,
+.status-badge.status-TIMEOUT {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.tooltip-info {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+.pulse-ring {
+    fill: none;
+    stroke-width: 2px;
+    opacity: 0;
+}

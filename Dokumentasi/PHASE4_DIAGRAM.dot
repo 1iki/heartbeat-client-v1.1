@@ -1,0 +1,86 @@
+digraph Phase4 {
+    // Graph settings
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=9];
+    
+    // Title
+    label="Phase 4: Logging Standardization & Code Deduplication\n(Isu #12 & #13)";
+    labelloc=t;
+    fontsize=14;
+    fontname="Arial Bold";
+    
+    // Clusters
+    subgraph cluster_problem {
+        label="Problems (Before)";
+        style=filled;
+        fillcolor="#ffcccc";
+        
+        prob1 [label="console.log scattered\nacross codebase", fillcolor="#ff9999"];
+        prob2 [label="No structured\ncontext", fillcolor="#ff9999"];
+        prob3 [label="Inconsistent\nerror responses", fillcolor="#ff9999"];
+        prob4 [label="40% code\nduplication", fillcolor="#ff9999"];
+        prob5 [label="Manual error\nclassification", fillcolor="#ff9999"];
+    }
+    
+    subgraph cluster_solution {
+        label="Solutions (After)";
+        style=filled;
+        fillcolor="#ccffcc";
+        
+        sol1 [label="Centralized Logger\n(logger.ts)", fillcolor="#99ff99"];
+        sol2 [label="Structured Context\nObjects", fillcolor="#99ff99"];
+        sol3 [label="API Helpers\n(api-helpers.ts)", fillcolor="#99ff99"];
+        sol4 [label="Standardized\nResponses", fillcolor="#99ff99"];
+        sol5 [label="Automatic Error\nClassification", fillcolor="#99ff99"];
+    }
+    
+    subgraph cluster_implementation {
+        label="Implementation";
+        style=filled;
+        fillcolor="#cce5ff";
+        
+        impl1 [label="lib/utils/logger.ts\n(122 lines)", fillcolor="#99ccff"];
+        impl2 [label="lib/utils/api-helpers.ts\n(356 lines)", fillcolor="#99ccff"];
+        impl3 [label="Refactor route.ts", fillcolor="#99ccff"];
+        impl4 [label="Refactor healthCheck.ts", fillcolor="#99ccff"];
+    }
+    
+    subgraph cluster_benefits {
+        label="Benefits Achieved";
+        style=filled;
+        fillcolor="#fff9cc";
+        
+        ben1 [label="Debug Time: -50%", fillcolor="#ffeb99"];
+        ben2 [label="Code Duplication: -40%", fillcolor="#ffeb99"];
+        ben3 [label="Log Searchability: +100%", fillcolor="#ffeb99"];
+        ben4 [label="Developer Onboarding: +60%", fillcolor="#ffeb99"];
+        ben5 [label="Error Traceability: +80%", fillcolor="#ffeb99"];
+    }
+    
+    // Connections: Problems -> Solutions
+    prob1 -> sol1 [label="centralize"];
+    prob2 -> sol2 [label="add context"];
+    prob3 -> sol3 [label="standardize"];
+    prob4 -> sol4 [label="deduplicate"];
+    prob5 -> sol5 [label="automate"];
+    
+    // Connections: Solutions -> Implementation
+    sol1 -> impl1 [label="create"];
+    sol2 -> impl1 [label="integrate"];
+    sol3 -> impl2 [label="create"];
+    sol4 -> impl2 [label="integrate"];
+    sol5 -> impl2 [label="integrate"];
+    
+    impl1 -> impl3 [label="refactor"];
+    impl1 -> impl4 [label="refactor"];
+    impl2 -> impl3 [label="refactor"];
+    
+    // Connections: Implementation -> Benefits
+    impl1 -> ben1 [label="enables"];
+    impl1 -> ben3 [label="enables"];
+    impl2 -> ben2 [label="achieves"];
+    impl2 -> ben4 [label="improves"];
+    impl3 -> ben5 [label="improves"];
+    impl4 -> ben5 [label="improves"];
+}
