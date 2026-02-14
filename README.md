@@ -1,6 +1,7 @@
 # 🎯 SPKL Monitoring System v2 - Project Overview
 
-**Status:** ✅ **PRODUCTION READY**  
+**Status:** ✅ **LIVE IN PRODUCTION**  
+**Production URL:** https://heartbeat-client-v1-1.vercel.app  
 **Date:** February 14, 2026  
 **Tech Stack:** Next.js 14 + React Three Fiber + TypeScript + MongoDB
 
@@ -9,6 +10,8 @@
 ## 📊 Project Status
 
 ```
+Deployment:  ✅ Live on Vercel
+Production:  https://heartbeat-client-v1-1.vercel.app
 Test Suites: 4 passed, 4 total
 Tests:       108 passed, 113 total
 Coverage:    98.5%+ on critical paths
@@ -63,6 +66,8 @@ curl -X POST http://localhost:3000/api/nodes \
 | File | Purpose |
 |------|---------|
 | [QUICKSTART.md](./QUICKSTART.md) | Step-by-step setup guide |
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | **🚀 Complete deployment guide** |
+| [DEPLOYMENT-SUCCESS.md](./DEPLOYMENT-SUCCESS.md) | **✅ Live deployment info & setup** |
 | [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) | Code patterns & utilities |
 | [CREDENTIALS-SETUP.md](./CREDENTIALS-SETUP.md) | **⚡ Quick setup untuk credentials (5 menit)** |
 | [SECURITY.md](./SECURITY.md) | **🔒 Panduan keamanan lengkap** |
