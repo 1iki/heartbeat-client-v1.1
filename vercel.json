@@ -15,12 +15,6 @@
         "LOG_LEVEL": "@log_level",
         "CRON_SECRET": "@cron_secret"
     },
-    "crons": [
-        {
-            "path": "/api/cron/check",
-            "schedule": "*/5 * * * *"
-        }
-    ],
     "headers": [
         {
             "source": "/api/(.*)",
