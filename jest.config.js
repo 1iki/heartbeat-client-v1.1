@@ -54,6 +54,8 @@ const customJestConfig = {
     testMatch: [
         '**/__tests__/**/*.[jt]s?(x)',
         '**/?(*.)+(spec|test).[jt]s?(x)',
+        '!**/__tests__/e2e/**', // Exclude E2E/Playwright tests
+        '!**/playwright/**', // Exclude Playwright directory
     ],
     
     // Transform files
