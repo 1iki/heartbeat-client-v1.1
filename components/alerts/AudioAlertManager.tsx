@@ -136,7 +136,7 @@ export function AudioAlertManager() {
             let hasChanges = false;
 
             // Add timestamps
-            currentErrorNodes.forEach(node => {
+            currentErrorNodes.forEach((node: NodeData) => {
                 const history = newHistory[node.id] || [];
                 const lastTime = history[history.length - 1];
                 if (!lastTime || (now - lastTime > 2000)) {

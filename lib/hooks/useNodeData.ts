@@ -1,8 +1,7 @@
-import useSWR from "swr";
+import useSWR, { type SWRConfiguration, type SWRResponse } from "swr";
 import { NodeData } from "@/types";
 import { POLLING_CONFIG } from "@/lib/constants";
 import { useUIStore } from "@/lib/stores/uiStore";
-import type { SWRConfiguration, SWRResponse } from "swr";
 
 /**
  * Custom API Error Class
