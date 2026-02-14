@@ -1,8 +1,35 @@
 {
+    "buildCommand": "npm run build",
+    "devCommand": "npm run dev",
+    "installCommand": "npm install",
+    "framework": "nextjs",
+    "regions": ["sin1"],
+    "env": {
+        "MONGODB_URI": "@mongodb_uri",
+        "NEXTAUTH_SECRET": "@nextauth_secret",
+        "NEXTAUTH_URL": "@nextauth_url",
+        "GOOGLE_SERVICE_ACCOUNT_EMAIL": "@google_service_account_email",
+        "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY": "@google_service_account_private_key",
+        "GOOGLE_SPREADSHEET_ID": "@google_spreadsheet_id",
+        "GOOGLE_SHEET_NAME": "@google_sheet_name",
+        "LOG_LEVEL": "@log_level",
+        "CRON_SECRET": "@cron_secret"
+    },
     "crons": [
         {
             "path": "/api/cron/check",
             "schedule": "*/5 * * * *"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/api/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "no-store, must-revalidate"
+                }
+            ]
         }
     ]
 }

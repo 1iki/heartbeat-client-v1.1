@@ -6,6 +6,16 @@ const nextConfig = {
     eslint: {
         ignoreDuringBuilds: false,
     },
+    // Production optimizations
+    poweredByHeader: false,
+    compress: true,
+    
+    // Image optimization
+    images: {
+        domains: [],
+        formats: ['image/avif', 'image/webp'],
+    },
+    
     experimental: {
         serverActions: {
             allowedOrigins: ['localhost:3000'],
@@ -13,8 +23,10 @@ const nextConfig = {
         // ✅ TAHAP 7: Enable instrumentation hook for env validation
         instrumentationHook: true,
     },
+    
     // Suppress SES lockdown warnings from browser extensions
     reactStrictMode: true,
+    
     webpack: (config, { isServer }) => {
         config.watchOptions = {
             poll: 1000,
@@ -31,6 +43,11 @@ const nextConfig = {
         }
         
         return config
+    },
+    
+    // Environment variable validation
+    env: {
+        NEXT_PUBLIC_APP_VERSION: '2.0.0',
     },
 }
 
